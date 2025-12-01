@@ -1,0 +1,171 @@
+```latex
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+% Medium Length Professional CV
+% LaTeX Blank Template (Same Styling)
+% Based on: Trey Hunner resume.cls layout
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass{resume} % Uses the custom resume.cls style (must be in same folder)
+
+\usepackage[left=0.4 in,top=0.3 in,right=0.4 in,bottom=0.3in]{geometry} % Document margins
+\newcommand{\tab}[1]{\hspace{.2667\textwidth}\rlap{#1}}
+\newcommand{\itab}[1]{\hspace{0em}\rlap{#1}}
+
+%===============================================================================
+%   PERSONAL DETAILS
+%===============================================================================
+
+\name{Your Name Here} % Your name
+
+% Primary address line (you can split into two lines if you like)
+\address{Street Address, City, Postal Code, Province/State, Country}
+
+% Secondary address/contact line (optional – can be phone + email)
+\address{+1 (000) 000-0000 \\ your.email@example.com}
+
+\begin{document}
+
+%===============================================================================
+%   EDUCATION
+%===============================================================================
+
+\begin{rSection}{Education}
+
+{\bf Degree Name (e.g., B.Sc. in Computing Science)} \hfill {Month Year -- Month Year}\\
+University Name, City, Country \\
+GPA: X.XX / 4.00 (or relevant note)
+
+{\bf Second Degree / Diploma / High School} \hfill {Month Year -- Month Year}\\
+Institution Name, City, Country, Percentage / GPA: \_\_\%
+
+\end{rSection}
+
+%===============================================================================
+%   SKILLS AND INTERESTS
+%===============================================================================
+
+\begin{rSection}{Skills and Interests}
+
+\begin{tabular}{ @{} >{\bfseries}l @{\hspace{6ex}} l }
+Interests & Your main interests (e.g., Product Development, Data Science, Finance, etc.) \\
+          & More interests if needed \\[0.3em]
+Technical Skills & Programming languages, tools, frameworks, etc. \\
+                 & (e.g., Python, C, Java, SQL, Git, Linux) \\[0.3em]
+Other Skills & Soft skills (e.g., Communication, Teamwork, Leadership, Time Management) \\
+\end{tabular}
+
+\end{rSection}
+
+%===============================================================================
+%   PROJECTS
+%===============================================================================
+
+\begin{rSection}{Projects}
+
+%----------------- Project 1 -----------------%
+\begin{rSubsection}
+{Project Title Here}
+{Month Year -- Month Year}
+{Project Type / Course / Organization}
+{}
+    \item Brief one-line project description and context
+    \item Key thing you did or built (e.g., implemented feature X using Y)
+    \item Impact / result (e.g., improved performance, accuracy, usability)
+\end{rSubsection}
+
+%----------------- Project 2 -----------------%
+\begin{rSubsection}
+{Project Title Here}
+{Month Year -- Month Year}
+{Project Type / Course / Organization}
+{}
+    \item Brief one-line project description and context
+    \item Key responsibilities or contributions
+    \item Any measurable outcomes or achievements
+\end{rSubsection}
+
+% Add more rSubsection blocks as needed
+
+\end{rSection}
+
+%===============================================================================
+%   RESEARCH PUBLICATIONS (OPTIONAL)
+%===============================================================================
+
+\begin{rSection}{Research Publications} \itemsep -3pt
+
+% Example entry; repeat as needed
+{\textbf{Your Name}, Coauthor Name, 
+``\textit{Title of Your Paper}'' Journal / Conference Name, 
+Volume (Issue), Pages, Year.} \hfill Month Year \\
+
+\end{rSection}
+
+%===============================================================================
+%   INTERNSHIP / TRAININGS
+%===============================================================================
+
+\begin{rSection}{Internships / Trainings} \itemsep -3pt
+
+{\textbf{Position / Internship Title}, \\Organization Name, City} \hfill Month Year -- Month Year \\[0.2em]
+{\textbf{Position / Training Title}, \\Organization Name, City} \hfill Month Year -- Month Year \\
+
+\end{rSection}
+
+%===============================================================================
+%   POSITIONS OF RESPONSIBILITY
+%===============================================================================
+
+\begin{rSection}{Positions of Responsibility}
+
+%----------------- Role 1 -----------------%
+\begin{rSubsection}
+{Role Title (e.g., Team Lead, Club President)}
+{Month Year -- Month Year}
+{Organization / Club / Team}
+{}
+    \item Main responsibilities (e.g., led a team of X members)
+    \item Specific initiatives or projects you led
+    \item Outcomes / achievements
+\end{rSubsection}
+
+%----------------- Role 2 -----------------%
+\begin{rSubsection}
+{Role Title (e.g., Event Coordinator)}
+{Month Year -- Month Year}
+{Organization / Club / Team}
+{}
+    \item Main responsibilities
+    \item Notable contributions or events organized
+\end{rSubsection}
+
+\end{rSection}
+
+%===============================================================================
+%   EXTRA-CURRICULAR ACTIVITIES
+%===============================================================================
+
+\begin{rSection}{Extra-Curricular Activities} \itemsep -2pt
+
+\begin{itemize}
+    \item Activity / Competition / Workshop Name \hfill Month Year \\
+          Short description or achievement (e.g., participated, won X prize)
+    \item Activity / Club / Volunteer Work \hfill Month Year \\
+          Brief details (e.g., hours, responsibilities)
+    \item Another event, conference, or seminar \hfill Month Year
+\end{itemize}
+
+\end{rSection}
+
+%===============================================================================
+%   DECLARATION (OPTIONAL – COMMON IN SOME COUNTRIES)
+%===============================================================================
+
+\begin{rSection}{Declaration} \itemsep -3pt
+
+\item I hereby declare that the information provided above is true and correct to the best of my knowledge and belief.
+
+\end{rSection}
+
+\end{document}
+```
