@@ -220,6 +220,31 @@ Multi-step progress indicators with descriptive messages:
 - Smooth animations with cubic-bezier easing
 - Touch-friendly button sizes (44px+ minimum)
 
+## Documentation
+
+### Public Documentation
+
+- **README.md**: Public-facing documentation for users and contributors
+  - Modern GitHub-style README with badges and quick start guide
+  - Concise overview of features and installation steps
+  - Links to CLAUDE.md for detailed development information
+  - Targets end-users and new contributors
+
+- **LICENSE**: Apache License 2.0
+  - Permissive open-source license with patent protection
+  - Allows commercial use, modification, and distribution
+  - Copyright 2025 JobAgent0
+
+### Developer Documentation
+
+- **CLAUDE.md** (this file): Comprehensive development guide for Claude Code and developers
+  - Detailed architecture patterns and implementation notes
+  - Backend/frontend flow explanations
+  - Development best practices and coding standards
+  - Targets experienced developers working on the codebase
+
+**Key Distinction**: README.md is for getting started and understanding the project; CLAUDE.md is for understanding how to develop and extend the codebase.
+
 ## Git Ignore
 
 The following files/folders are excluded from version control:
@@ -259,6 +284,7 @@ The following files/folders are excluded from version control:
 ## Future Enhancements
 
 **Potential improvements** (not currently planned):
+- **Visual Documentation**: Add screenshots and demo GIFs to README.md for better visual appeal
 - Dark mode support for entire interface
 - Docker container setup for easier deployment
 - Automated testing suite (pytest for backend, Jest for frontend)
