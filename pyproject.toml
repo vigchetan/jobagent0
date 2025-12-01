@@ -16,6 +16,7 @@ dependencies = [
     "pydantic-settings>=2.1.0",
     "python-dotenv>=1.0.0",
     "langchain-pymupdf4llm>=0.5.0",
+    "python-magic>=0.4.27",
 ]
 
 [project.optional-dependencies]

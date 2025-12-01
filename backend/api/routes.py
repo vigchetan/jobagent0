@@ -12,6 +12,7 @@ from pathlib import Path
 import tempfile
 import logging
 import json
+import magic
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -40,18 +41,31 @@ async def upload_resume(file: UploadFile = File(...)):
         HTTPException: If validation fails or processing errors occur
     """
     try:
-        # Validate file type
+        # Validate file extension
         if not file.filename.endswith(".pdf"):
             raise HTTPException(status_code=400, detail="Only PDF files are supported")
 
         logger.info(f"Received resume upload: {file.filename}")
 
-        # Validate file size (max 10MB)
+        # Read file content
         content = await file.read()
+
+        # Validate file size (max 10MB)
         if len(content) > 10 * 1024 * 1024:
             raise HTTPException(
                 status_code=400, detail="File size must be less than 10MB"
             )
+
+        # Validate MIME type (security check)
+        mime = magic.from_buffer(content, mime=True)
+        if mime != 'application/pdf':
+            logger.warning(f"Invalid MIME type detected: {mime} for file: {file.filename}")
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid file type. Only PDF files are allowed."
+            )
+
+        logger.info(f"MIME type validated: {mime}")
 
         # Ensure workspace exists
         ensure_workspace_exists()

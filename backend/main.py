@@ -1,4 +1,5 @@
 """FastAPI application entry point"""
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.api.routes import router
@@ -14,11 +15,32 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-# Create FastAPI app
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Modern lifespan context manager for FastAPI application.
+
+    This replaces the deprecated @app.on_event("startup") decorator.
+    Handles startup and shutdown events in a single context manager.
+    """
+    # Startup
+    logger.info("Starting JobAgent0 Resume Parser")
+    logger.info(f"Workspace directory: {settings.workspace_path}")
+    ensure_workspace_exists()
+
+    yield
+
+    # Shutdown (if needed in the future)
+    logger.info("Shutting down JobAgent0 Resume Parser")
+
+
+# Create FastAPI app with lifespan
 app = FastAPI(
-    title="JobApp Resume Parser",
-    description="Resume upload and parsing service for JobApp MVP",
+    title="JobAgent0 Resume Parser",
+    description="Resume upload and parsing service",
     version="1.0.0",
+    lifespan=lifespan,
 )
 
 # Configure CORS for Chrome Extension
@@ -32,14 +54,6 @@ app.add_middleware(
 
 # Include API routes
 app.include_router(router, prefix="/api", tags=["resume"])
-
-
-@app.on_event("startup")
-async def startup_event():
-    """Initialize workspace on startup"""
-    logger.info("Starting JobApp Resume Parser")
-    logger.info(f"Workspace directory: {settings.workspace_path}")
-    ensure_workspace_exists()
 
 
 @app.get("/")
