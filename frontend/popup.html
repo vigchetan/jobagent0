@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JobApp</title>
+    <title>JobAgent0</title>
     <link rel="stylesheet" href="popup.css">
 </head>
 <body>
     <div class="popup-container">
         <div class="popup-header">
-            <div class="popup-title">JobApp Assistant</div>
-            <div class="popup-description">Upload your resume to get started</div>
+            <div class="popup-title">JobAgent0</div>
+            <div class="popup-description">AI-powered resume and cover letter generation</div>
         </div>
 
         <!-- Resume Upload Section -->
@@ -31,19 +31,25 @@
         <div id="successSection" class="section hidden">
             <div class="success-icon">✓</div>
             <p class="success-message">Resume uploaded successfully!</p>
-            <button class="primary-button" id="generateBtn">
-                Generate Resume & Cover Letter
-            </button>
-            <button class="secondary-button" id="reuploadBtn">
-                Upload Different Resume
-            </button>
+            <div class="button-group">
+                <button class="primary-button" id="generateBtn">
+                    Generate Resume & Cover Letter
+                </button>
+                <button class="secondary-button" id="reuploadBtn">
+                    Upload Different Resume
+                </button>
+            </div>
             <div id="jobStatus" class="status-message"></div>
         </div>
 
         <!-- Loading Indicator -->
         <div id="loadingIndicator" class="loading hidden">
             <div class="spinner"></div>
-            <p id="loadingText">Processing resume...</p>
+            <div class="loading-content">
+                <p id="loadingText" class="loading-message">Processing...</p>
+                <p id="loadingProgress" class="loading-progress">Step 1 of 3</p>
+                <p id="loadingDetail" class="loading-detail">Extracting text from PDF...</p>
+            </div>
         </div>
 
         <div class="popup-footer">

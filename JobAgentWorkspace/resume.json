@@ -2,21 +2,21 @@
   "contact_info": {
     "full_name": "Chetan Vig",
     "email": "cvig@ualberta.ca",
-    "phone": "+1(365)883-2406",
+    "phone": "+1(365)883-406",
     "location": "Edmonton, Alberta, Canada",
     "linkedin": null,
     "github": "github.com/vigchetan",
     "website": null,
     "other_links": []
   },
-  "summary": "Computer Science student at the University of Alberta with experience building AI - powered applications. Currently developing an LLM - based club assistant that automates Discord workflows using Python, APIs, and databases. Passionate about AI/ML and leveraging modern\n\ndevelopment tools to build practical solutions. Seeking SWE, AI/ML, data science, or full - stack internship opportunities.",
+  "summary": "Computer Science student at the University of Alberta with experience building AI - powered applications. Currently developing an LLM - based club assistant that automates Discord workflows using Python, APIs, and databases. Passionate about AI/ML and leveraging modern\ndevelopment tools to build practical solutions. Seeking SWE, AI/ML, data science, or full - stack internship opportunities.",
   "education": [
     {
       "institution": "University of Alberta",
-      "degree": "2027",
+      "degree": "N/A",
       "field_of_study": null,
       "start_date": null,
-      "end_date": null,
+      "end_date": "2027",
       "gpa": null,
       "honors": [],
       "relevant_coursework": [],
@@ -26,7 +26,7 @@
   "experience": [
     {
       "company": "MacEwan Residence - MacEwan University",
-      "position": "MacEwan Residence",
+      "position": "N/A",
       "location": "Edmonton,, Alberta",
       "start_date": "November 2024",
       "end_date": "Present",
@@ -43,11 +43,11 @@
   ],
   "projects": [
     {
-      "name": "Clubmate AI - Ongoing",
+      "name": "Clubmate AI",
       "description": "Undergraduate Artificial Intelligence [Society • github.com/UndergraduateArtificialIntelligenceClub/Clubmate-AI] -A I",
       "role": null,
       "start_date": "September 2025",
-      "end_date": null,
+      "end_date": "Present",
       "technologies": [
         "Python",
         "MCP SDK",
@@ -83,7 +83,7 @@
         "LLMs & context engineering",
         "RAG",
         "PyTorch",
-        "Scikit- Learn",
+        "Sciki t- Learn",
         "NumPy",
         "Pandas",
         "Seaborn",
@@ -120,7 +120,7 @@
   "volunteer_experience": [
     {
       "company": "Perplexity",
-      "position": "INVOLVEMENT",
+      "position": "N/A",
       "location": "Edmonton, Alberta",
       "start_date": "September 2025",
       "end_date": "Present",

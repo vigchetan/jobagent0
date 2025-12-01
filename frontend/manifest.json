@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "JobApp - Resume & Cover Letter Generator",
+  "name": "JobAgent0 - AI Resume & Cover Letter Generator",
   "version": "1.0.0",
-  "description": "Generate tailored resumes and cover letters for job applications",
+  "description": "Generate tailored resumes and cover letters with AI for job applications",
   "permissions": [
     "storage",
     "activeTab",
@@ -14,7 +14,7 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "JobApp Assistant"
+    "default_title": "JobAgent0"
   },
   "icons": {
     "16": "icons/icon16.png",

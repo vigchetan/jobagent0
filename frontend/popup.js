@@ -51,7 +51,11 @@ generateBtn.addEventListener('click', async () => {
 async function generateDocuments() {
     try {
         // Step 1: Extract and capture job posting
-        showLoadingForJob('Extracting job posting...');
+        showLoadingWithProgress(
+            1, 3,
+            'Extracting Job Posting',
+            'Reading job requirements from the page...'
+        );
 
         // Get the current active tab
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -96,9 +100,13 @@ async function generateDocuments() {
 
         const { raw_text, url } = response.data;
 
-        // Send job posting data to backend
+        // Step 2: Analyze job requirements
         console.log('[JobApp] Sending job posting to backend...');
-        showLoadingForJob('Capturing job posting...');
+        showLoadingWithProgress(
+            2, 3,
+            'Analyzing Job Requirements',
+            'Understanding role expectations and required skills...'
+        );
 
         const jobResponse = await fetch(`${API_BASE_URL}/job`, {
             method: 'POST',
@@ -120,8 +128,12 @@ async function generateDocuments() {
         const jobSlug = jobResult.job_slug;
         console.log('[JobApp] Job captured:', jobSlug);
 
-        // Step 2: Generate documents
-        showLoadingForJob('Generating cover letter and resume...');
+        // Step 3: Generate documents
+        showLoadingWithProgress(
+            3, 3,
+            'Generating Documents',
+            'Creating tailored resume and cover letter using AI...'
+        );
 
         console.log('[JobApp] Calling /generate endpoint...');
         const generateResponse = await fetch(`${API_BASE_URL}/generate`, {
@@ -174,7 +186,7 @@ async function uploadResume(file) {
 
     try {
         // Show loading state
-        showLoading();
+        showLoadingWithProgress(1, 1, 'Uploading Resume', 'Analyzing your resume with AI...');
 
         // Create form data
         const formData = new FormData();
@@ -209,6 +221,21 @@ async function uploadResume(file) {
 }
 
 // UI State Management
+function showLoadingWithProgress(step, total, title, detail) {
+    uploadSection.classList.add('hidden');
+    successSection.classList.add('hidden');
+    loadingIndicator.classList.remove('hidden');
+
+    const loadingText = document.getElementById('loadingText');
+    const loadingProgress = document.getElementById('loadingProgress');
+    const loadingDetail = document.getElementById('loadingDetail');
+
+    loadingText.textContent = title;
+    loadingProgress.textContent = `Step ${step} of ${total}`;
+    loadingDetail.textContent = detail;
+    statusText.textContent = 'Processing...';
+}
+
 function showUploadState() {
     uploadSection.classList.remove('hidden');
     successSection.classList.add('hidden');
