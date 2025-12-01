@@ -39,3 +39,7 @@ htmlcov/
 # Temporary files
 *.tmp
 *.bak
+
+# User data and workspace
+resume.json
+JobAgentWorkspace/
