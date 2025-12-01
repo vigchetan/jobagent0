@@ -1,0 +1,140 @@
+{
+  "contact_info": {
+    "full_name": "Chetan Vig",
+    "email": "cvig@ualberta.ca",
+    "phone": "+1(365)883-2406",
+    "location": "Edmonton, Alberta, Canada",
+    "linkedin": null,
+    "github": "github.com/vigchetan",
+    "website": null,
+    "other_links": []
+  },
+  "summary": "Computer Science student at the University of Alberta with experience building AI - powered applications. Currently developing an LLM - based club assistant that automates Discord workflows using Python, APIs, and databases. Passionate about AI/ML and leveraging modern\n\ndevelopment tools to build practical solutions. Seeking SWE, AI/ML, data science, or full - stack internship opportunities.",
+  "education": [
+    {
+      "institution": "University of Alberta",
+      "degree": "2027",
+      "field_of_study": null,
+      "start_date": null,
+      "end_date": null,
+      "gpa": null,
+      "honors": [],
+      "relevant_coursework": [],
+      "description": null
+    }
+  ],
+  "experience": [
+    {
+      "company": "MacEwan Residence - MacEwan University",
+      "position": "MacEwan Residence",
+      "location": "Edmonton,, Alberta",
+      "start_date": "November 2024",
+      "end_date": "Present",
+      "current": true,
+      "responsibilities": [
+        "Provide excellent customer service for students and guests, handling chec k- ins, chec k- outs, and inquiries.",
+        "Maintain organized records, manage mail and packages, and assist with administrative tasks.",
+        "Facilitated seamless guest and student experiences by efficiently addressing inquiries, coordinating chec k- ins and chec k- outs, and"
+      ],
+      "achievements": [],
+      "technologies": [],
+      "description": null
+    }
+  ],
+  "projects": [
+    {
+      "name": "Clubmate AI - Ongoing",
+      "description": "Undergraduate Artificial Intelligence [Society • github.com/UndergraduateArtificialIntelligenceClub/Clubmate-AI] -A I",
+      "role": null,
+      "start_date": "September 2025",
+      "end_date": null,
+      "technologies": [
+        "Python",
+        "MCP SDK",
+        "LLMs (OpenAI standard)",
+        "Pydantic",
+        "Async/Await"
+      ],
+      "achievements": [
+        "LLM & Protocol Integration: Developed a high - performance, Async Python service bridging an LLM via Model Context Protocol (MCP) to execute 17 standardized API tools for server automation.",
+        "Security & Validation: Implemented strict Role - Based Access Control (RBAC) using Discord roles for tool permissions, and enforced data reliability across all inputs using Pydantic schema validation.",
+        "Quantified Impact: Reduced club administrative burden by an estimated 80% (scheduling, moderation, outreach), freeing leadership time and measurably increasing member engagement."
+      ],
+      "link": null
+    }
+  ],
+  "skills": [
+    {
+      "category": "Programming & CS",
+      "items": [
+        "Python",
+        "C (C99)",
+        "JavaScript/TypeScript",
+        "SQL",
+        "data structures & algorithms",
+        "OOP",
+        "spec - driven development"
+      ]
+    },
+    {
+      "category": "AI / ML & Data",
+      "items": [
+        "Machine learning & deep learning",
+        "LLMs & context engineering",
+        "RAG",
+        "PyTorch",
+        "Scikit- Learn",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "LangChain",
+        "LlamaIndex",
+        "Pinecone",
+        "Hugging Face",
+        "SpaCy",
+        "data analysis & visualization",
+        "feature engineering",
+        "hypothesis testing"
+      ]
+    },
+    {
+      "category": "Systems, Web & Tools",
+      "items": [
+        "React",
+        "REST APIs",
+        "PostgreSQL",
+        "Git",
+        "Linux CLI",
+        "Docker",
+        "Streamlit",
+        "PyTest",
+        "MCP / MCP SDK",
+        "AWS (learning)"
+      ]
+    }
+  ],
+  "certifications": [],
+  "publications": [],
+  "awards": [],
+  "languages": [],
+  "volunteer_experience": [
+    {
+      "company": "Perplexity",
+      "position": "INVOLVEMENT",
+      "location": "Edmonton, Alberta",
+      "start_date": "September 2025",
+      "end_date": "Present",
+      "current": true,
+      "responsibilities": [
+        "Promoted Perplexity's Comet browser on campus through creative grassroots events and outreach.",
+        "Collaborated with the growth team and student strategists to boost awareness and signups, distributed branded materials, and gathered",
+        "Developed marketing and communication skills in a fas t- paced, tech - driven environment."
+      ],
+      "achievements": [],
+      "technologies": [],
+      "description": null
+    }
+  ],
+  "additional_sections": {},
+  "raw_text": "# Chetan Vig\n\nEdmonton, Alberta, Canada cvig@ualberta.ca +1(365)883 ~~-2~~ 406 [github.com/vigchetan](https://github.com/vigchetan)\n\n\nSUMMARY\n\nComputer Science student at the University of Alberta with experience building AI ~~-~~ powered applications. Currently developing an LLM ~~-~~\n\nbased club assistant that automates Discord workflows using Python, APIs, and databases. Passionate about AI/ML and leveraging modern\n\ndevelopment tools to build practical solutions. Seeking SWE, AI/ML, data science, or full ~~-~~ stack internship opportunities.\n\n\nEXPERIENCE\n\nMacEwan Residence ~~-~~ MacEwan University November 2024 ~~-~~ Present Edmonton,, Alberta\n\n- Provide excellent customer service for students and guests, handling chec ~~k-~~ ins, chec ~~k-~~ outs, and inquiries.\n\n- Maintain organized records, manage mail and packages, and assist with administrative tasks.\n\n\n\n\n\n\n\nFacilitated seamless guest and student experiences by efficiently addressing inquiries, coordinating chec ~~k-~~ ins and chec ~~k-~~ outs, and\n\n\n\nPROJECT\n\nClubmate AI ~~-~~ Ongoing\n\nUndergraduate Artificial Intelligence [Society • github.com/UndergraduateArtificialIntelligenceClub/Clubmate](https://github.com/UndergraduateArtificialIntelligenceClub/Clubmate-AI) ~~-A~~ I\n\n- September 2025 ~~-~~ Present\n\n- Language/Tools: Python, MCP SDK, LLMs (OpenAI standard), Pydantic, Async/Await.\n\n\n\n\n\n\n\n\n\n\n\nLLM & Protocol Integration: Developed a high ~~-~~ performance, Async Python service bridging an LLM via Model Context Protocol (MCP)\n\n\nto execute 17 standardized API tools for server automation.\n\nSecurity & Validation: Implemented strict Role ~~-~~ Based Access Control (RBAC) using Discord roles for tool permissions, and enforced data\n\nreliability across all inputs using Pydantic schema validation.\n\nQuantified Impact: Reduced club administrative burden by an estimated 80% (scheduling, moderation, outreach), freeing leadership time\n\nand measurably increasing member engagement.\n\n\n\nEDUCATION\n\nUniversity of Alberta • Edmonton, Alberta • 2027\n\n\nINVOLVEMENT\n\nEdmonton, Alberta • Perplexity • September 2025 ~~-~~ Present\n\n- Promoted Perplexity's Comet browser on campus through creative grassroots events and outreach.\n\n\n\n\n\n\n\nCollaborated with the growth team and student strategists to boost awareness and signups, distributed branded materials, and gathered\n\n\n\n\n- Developed marketing and communication skills in a fas ~~t-~~ paced, tech ~~-~~ driven environment.\n\n\nSKILLS\n\nProgramming & CS: Python, C (C99), JavaScript/TypeScript, SQL; data structures & algorithms, OOP, spec ~~-~~ driven development\n\nAI / ML & Data: Machine learning & deep learning, LLMs & context engineering, RAG; PyTorch, Sciki ~~t-~~ Learn, NumPy, Pandas, Seaborn,\n\nLangChain, LlamaIndex, Pinecone, Hugging Face, SpaCy; data analysis & visualization, feature engineering, hypothesis testing\n\nSystems, Web & Tools: React, REST APIs, PostgreSQL, Git, Linux CLI, Docker, Streamlit, PyTest, MCP / MCP SDK, AWS (learning)\n\n\n"
+}

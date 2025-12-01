@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JobApp</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div class="popup-container">
+        <div class="popup-header">
+            <div class="popup-title">JobApp Assistant</div>
+            <div class="popup-description">Upload your resume to get started</div>
+        </div>
+
+        <!-- Resume Upload Section -->
+        <div id="uploadSection" class="section">
+            <input
+                type="file"
+                id="resumeInput"
+                accept=".pdf"
+                style="display: none;"
+            >
+            <button class="primary-button" id="uploadBtn">
+                Upload Resume (PDF)
+            </button>
+            <div id="uploadStatus" class="status-message"></div>
+        </div>
+
+        <!-- Success Section (hidden initially) -->
+        <div id="successSection" class="section hidden">
+            <div class="success-icon">✓</div>
+            <p class="success-message">Resume uploaded successfully!</p>
+            <button class="primary-button" id="generateBtn">
+                Generate Resume & Cover Letter
+            </button>
+            <button class="secondary-button" id="reuploadBtn">
+                Upload Different Resume
+            </button>
+            <div id="jobStatus" class="status-message"></div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" class="loading hidden">
+            <div class="spinner"></div>
+            <p id="loadingText">Processing resume...</p>
+        </div>
+
+        <div class="popup-footer">
+            <span id="statusText">Ready</span>
+        </div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+[project]
+name = "resume"
+version = "0.1.0"
+description = "JobApp MVP - Resume Upload and Parsing"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.104.1",
+    "uvicorn[standard]>=0.24.0",
+    "python-multipart>=0.0.6",
+    "langchain>=0.1.0",
+    "langchain-google-genai>=1.0.0",
+    "langchain-community>=0.0.13",
+    "pymupdf>=1.23.0",
+    "pydantic>=2.5.0",
+    "pydantic-settings>=2.1.0",
+    "python-dotenv>=1.0.0",
+    "langchain-pymupdf4llm>=0.5.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.3",
+    "httpx>=0.25.2",
+]
