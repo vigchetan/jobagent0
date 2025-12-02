@@ -145,7 +145,48 @@ class LaTeXGeneratorService:
         if content.endswith("```"):
             content = content[:-len("```")].strip()
 
+        # Validate the LaTeX code
+        self._validate_latex_code(content)
+
         return content
+
+    def _validate_latex_code(self, latex_code: str) -> None:
+        """
+        Validates LaTeX code for common issues that would prevent compilation.
+        Logs warnings for problematic patterns.
+
+        Args:
+            latex_code: The LaTeX code to validate
+
+        Raises:
+            ValueError: If critical issues are detected that would prevent compilation
+        """
+        # Check for \input{} or \include{} commands
+        if "\\input{" in latex_code or "\\include{" in latex_code:
+            logger.warning(
+                "Generated LaTeX contains \\input{} or \\include{} commands. "
+                "This may cause compilation failures if referenced files don't exist."
+            )
+            raise ValueError(
+                "Generated LaTeX uses external file references (\\input or \\include). "
+                "The document must be self-contained for successful compilation."
+            )
+
+        # Check for custom document classes (non-standard)
+        import re
+        doc_class_match = re.search(r'\\documentclass(?:\[.*?\])?\{([^}]+)\}', latex_code)
+        if doc_class_match:
+            doc_class = doc_class_match.group(1)
+            standard_classes = ['article', 'report', 'book', 'letter', 'beamer', 'memoir']
+            if doc_class not in standard_classes:
+                logger.warning(
+                    f"Generated LaTeX uses non-standard document class: {doc_class}. "
+                    f"This may require external .cls files and cause compilation failures."
+                )
+                raise ValueError(
+                    f"Generated LaTeX uses non-standard document class '{doc_class}'. "
+                    f"Only standard classes ({', '.join(standard_classes)}) are allowed."
+                )
 
     def _save_latex_file(self, latex_code: str, output_path: Path) -> None:
         """

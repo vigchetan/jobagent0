@@ -52,6 +52,8 @@ LATEX STRUCTURE:
 - Include necessary packages (geometry, hyperref, enumitem, etc.)
 - Use clean formatting with appropriate spacing
 - Ensure single-page format if possible (two pages maximum)
+- CRITICAL: DO NOT use \\input{} or \\include{} commands - the document must be completely self-contained
+- CRITICAL: Only use standard LaTeX document classes (article, report, letter) that don't require external .cls files
 
 OUTPUT:
 Return ONLY the complete LaTeX code, nothing else. The output should be ready to compile."""
