@@ -5,8 +5,10 @@ from backend.config.prompts import (
     COVER_LETTER_SYSTEM_PROMPT,
     RESUME_SYSTEM_PROMPT,
     build_cover_letter_prompt,
-    build_resume_prompt
+    build_resume_prompt,
+    build_template_resume_prompt
 )
+from backend.services.template_manager import TemplateManager
 from pathlib import Path
 import logging
 import json
@@ -18,12 +20,14 @@ class LaTeXGeneratorService:
     """Service for generating LaTeX documents (cover letters and resumes) using Gemini"""
 
     def __init__(self):
-        """Initialize Gemini model for LaTeX generation"""
+        """Initialize Gemini model for LaTeX generation and template manager"""
         self.llm = ChatGoogleGenerativeAI(
             model="gemini-2.0-flash-exp",
             google_api_key=settings.google_api_key,
             temperature=0.7,  # Slightly higher temperature for creative writing
         )
+        self.template_manager = TemplateManager()
+        self._cls_files = None  # Store cls files for compilation
 
     def generate_cover_letter(
         self,
@@ -83,6 +87,8 @@ class LaTeXGeneratorService:
         """
         Generate a tailored resume in LaTeX format.
 
+        Tries template-based generation first, falls back to scratch generation if needed.
+
         Args:
             resume_data: The parsed resume data as dictionary
             job_data: The job posting data as dictionary
@@ -95,7 +101,110 @@ class LaTeXGeneratorService:
             ValueError: If generation fails
         """
         try:
-            logger.info("Generating tailored resume with Gemini...")
+            # Try template-based generation first
+            logger.info("Attempting template-based resume generation...")
+            latex_code = self._generate_resume_with_template(
+                resume_data, job_data, output_path
+            )
+            logger.info("Template-based generation successful")
+            return latex_code
+
+        except Exception as e:
+            logger.warning(
+                f"Template-based generation failed: {e}. "
+                "Falling back to scratch generation."
+            )
+            # Reset cls_files since template generation failed
+            self._cls_files = None
+
+            # Fallback to scratch generation
+            return self._generate_resume_from_scratch(
+                resume_data, job_data, output_path
+            )
+
+    def _generate_resume_with_template(
+        self,
+        resume_data: dict,
+        job_data: dict,
+        output_path: Path
+    ) -> str:
+        """
+        Generate resume using template-based approach.
+
+        Args:
+            resume_data: The parsed resume data as dictionary
+            job_data: The job posting data as dictionary
+            output_path: Path where resume.tex should be saved
+
+        Returns:
+            str: The generated LaTeX code
+
+        Raises:
+            ValueError: If template generation fails
+        """
+        # Select appropriate template
+        template_name = self.template_manager.select_resume_template(
+            resume_data, job_data
+        )
+
+        if not template_name:
+            raise ValueError("No suitable template found")
+
+        # Load template
+        template_content = self.template_manager.load_template(template_name)
+        template_info = self.template_manager.get_template_info(template_name)
+
+        # Store cls_files for later use by PDF compiler
+        self._cls_files = template_info.cls_files
+        logger.info(f"Using template: {template_name} with {len(self._cls_files)} .cls file(s)")
+
+        # Build prompt for AI to generate content following template structure
+        user_prompt = build_template_resume_prompt(
+            resume_data, job_data, template_content
+        )
+
+        # Create messages
+        from backend.config.prompts import TEMPLATE_RESUME_SYSTEM_PROMPT
+        messages = [
+            {"role": "system", "content": TEMPLATE_RESUME_SYSTEM_PROMPT},
+            {"role": "user", "content": user_prompt}
+        ]
+
+        # Call Gemini
+        logger.info("Calling Gemini API for template-based resume generation...")
+        response = self.llm.invoke(messages)
+
+        # Extract LaTeX code
+        latex_code = self._extract_latex_code(response.content)
+
+        # Save to file
+        self._save_latex_file(latex_code, output_path)
+
+        logger.info(f"Template-based resume LaTeX saved to: {output_path}")
+        return latex_code
+
+    def _generate_resume_from_scratch(
+        self,
+        resume_data: dict,
+        job_data: dict,
+        output_path: Path
+    ) -> str:
+        """
+        Generate resume from scratch (original method).
+
+        Args:
+            resume_data: The parsed resume data as dictionary
+            job_data: The job posting data as dictionary
+            output_path: Path where resume.tex should be saved
+
+        Returns:
+            str: The generated LaTeX code
+
+        Raises:
+            ValueError: If generation fails
+        """
+        try:
+            logger.info("Generating tailored resume from scratch with Gemini...")
 
             # Build the complete prompt
             user_prompt = build_resume_prompt(resume_data, job_data)
@@ -161,7 +270,7 @@ class LaTeXGeneratorService:
         Raises:
             ValueError: If critical issues are detected that would prevent compilation
         """
-        # Check for \input{} or \include{} commands
+        # Check for \input{} or \include{} commands (security)
         if "\\input{" in latex_code or "\\include{" in latex_code:
             logger.warning(
                 "Generated LaTeX contains \\input{} or \\include{} commands. "
@@ -172,21 +281,9 @@ class LaTeXGeneratorService:
                 "The document must be self-contained for successful compilation."
             )
 
-        # Check for custom document classes (non-standard)
-        import re
-        doc_class_match = re.search(r'\\documentclass(?:\[.*?\])?\{([^}]+)\}', latex_code)
-        if doc_class_match:
-            doc_class = doc_class_match.group(1)
-            standard_classes = ['article', 'report', 'book', 'letter', 'beamer', 'memoir']
-            if doc_class not in standard_classes:
-                logger.warning(
-                    f"Generated LaTeX uses non-standard document class: {doc_class}. "
-                    f"This may require external .cls files and cause compilation failures."
-                )
-                raise ValueError(
-                    f"Generated LaTeX uses non-standard document class '{doc_class}'. "
-                    f"Only standard classes ({', '.join(standard_classes)}) are allowed."
-                )
+        # Note: Custom document class restriction removed.
+        # The template system provides vetted custom classes with .cls files.
+        # PDFCompilerService will copy necessary .cls files to the work directory.
 
     def _save_latex_file(self, latex_code: str, output_path: Path) -> None:
         """

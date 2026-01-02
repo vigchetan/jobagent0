@@ -265,6 +265,11 @@ async def generate_documents(request: GenerateRequest):
             resume_data, job_data, resume_tex_path
         )
 
+        # Get cls_files from generator (if template-based generation was used)
+        cls_files = getattr(latex_generator, '_cls_files', None)
+        if cls_files:
+            logger.info(f"Template generation used {len(cls_files)} .cls file(s)")
+
         # Check if pdflatex is installed
         if not PDFCompilerService.check_latex_installed():
             logger.warning("pdflatex not installed - returning LaTeX files only")
@@ -276,16 +281,17 @@ async def generate_documents(request: GenerateRequest):
                 error="pdflatex not installed. LaTeX files generated but PDFs could not be compiled."
             )
 
-        # Compile cover letter to PDF
+        # Compile cover letter to PDF (no cls_files needed for cover letters yet)
         logger.info("Compiling cover letter to PDF...")
         cover_letter_pdf_path = PDFCompilerService.compile_latex_to_pdf(
             cover_letter_tex_path
         )
 
-        # Compile resume to PDF
+        # Compile resume to PDF (pass cls_files if available)
         logger.info("Compiling resume to PDF...")
         resume_pdf_path = PDFCompilerService.compile_latex_to_pdf(
-            resume_tex_path
+            resume_tex_path,
+            cls_files=cls_files
         )
 
         # Build relative paths for response

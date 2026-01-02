@@ -21,9 +21,17 @@
                 accept=".pdf"
                 style="display: none;"
             >
-            <button class="primary-button" id="uploadBtn">
-                Upload Resume (PDF)
-            </button>
+            <div id="dropZone" class="drop-zone">
+                <svg class="upload-icon" width="48" height="48" viewBox="0 0 24 24" fill="none">
+                    <path d="M7 18a4.6 4.4 0 0 1 0-9 5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7h-12Z"
+                          stroke="currentColor" stroke-width="2"/>
+                    <path d="M9 15l3-3 3 3M12 12v9" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                <div class="drop-zone-text">
+                    <strong>Drop PDF here</strong> or <span class="link-text">browse files</span>
+                </div>
+                <div class="drop-zone-hint">PDF files up to 10MB</div>
+            </div>
             <div id="uploadStatus" class="status-message"></div>
         </div>
 
@@ -53,7 +61,14 @@
         </div>
 
         <div class="popup-footer">
-            <span id="statusText">Ready</span>
+            <div id="backendStatus" class="backend-status checking">
+                <span class="status-dot"></span> Checking backend...
+            </div>
+            <div class="keyboard-hints">
+                <div class="hint"><kbd>Ctrl+U</kbd> Upload</div>
+                <div class="hint"><kbd>Ctrl+G</kbd> Generate</div>
+                <div class="hint"><kbd>Esc</kbd> Clear</div>
+            </div>
         </div>
     </div>
 

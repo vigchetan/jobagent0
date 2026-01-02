@@ -1,21 +1,132 @@
 // Configuration
 const API_BASE_URL = 'http://localhost:8000/api';
 
+// Error message enhancements
+const ERROR_SUGGESTIONS = {
+    'Failed to fetch': {
+        message: 'Cannot connect to backend server',
+        suggestions: [
+            'Ensure the backend is running on localhost:8000',
+            'Run: uvicorn backend.main:app --reload'
+        ]
+    },
+    'File size must be less than 10MB': {
+        message: 'Resume file is too large',
+        suggestions: [
+            'Compress the PDF using online tools',
+            'Remove unnecessary images or pages'
+        ]
+    },
+    'Only PDF files are supported': {
+        message: 'Invalid file format',
+        suggestions: [
+            'Convert your resume to PDF format',
+            'Ensure the file extension is .pdf'
+        ]
+    },
+    'Please upload a PDF file': {
+        message: 'Invalid file format',
+        suggestions: [
+            'Only PDF files are accepted',
+            'Ensure the file extension is .pdf'
+        ]
+    },
+    'Cannot access this page': {
+        message: 'Page cannot be read',
+        suggestions: [
+            'Navigate to a job posting on LinkedIn, Indeed, or company career pages',
+            'Avoid restricted pages like chrome://, file://, or chrome-extension://'
+        ]
+    },
+    'No active tab found': {
+        message: 'No browser tab is active',
+        suggestions: [
+            'Ensure you have a job posting page open',
+            'Click on the tab before opening the extension'
+        ]
+    }
+};
+
+function enhanceErrorMessage(errorMessage) {
+    // Find matching error pattern
+    for (const [pattern, details] of Object.entries(ERROR_SUGGESTIONS)) {
+        if (errorMessage.includes(pattern)) {
+            let enhanced = `<strong>${details.message}</strong><br><br>`;
+            enhanced += '<strong>Suggestions:</strong><ul>';
+            details.suggestions.forEach(suggestion => {
+                enhanced += `<li>${suggestion}</li>`;
+            });
+            enhanced += '</ul>';
+            return enhanced;
+        }
+    }
+    // Return original message if no match
+    return errorMessage;
+}
+
 // DOM Elements
-const uploadBtn = document.getElementById('uploadBtn');
+const dropZone = document.getElementById('dropZone');
 const resumeInput = document.getElementById('resumeInput');
 const uploadSection = document.getElementById('uploadSection');
 const successSection = document.getElementById('successSection');
 const loadingIndicator = document.getElementById('loadingIndicator');
 const uploadStatus = document.getElementById('uploadStatus');
-const statusText = document.getElementById('statusText');
+const backendStatus = document.getElementById('backendStatus');
 const reuploadBtn = document.getElementById('reuploadBtn');
 const generateBtn = document.getElementById('generateBtn');
 const jobStatus = document.getElementById('jobStatus');
 const loadingText = document.getElementById('loadingText');
 
+// Check backend health
+async function checkBackendHealth() {
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+
+        const response = await fetch(`${API_BASE_URL}/health`, {
+            method: 'GET',
+            signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+        const data = await response.json();
+        return data.status === 'healthy';
+    } catch (error) {
+        return false;
+    }
+}
+
+function showBackendStatus(isHealthy) {
+    if (isHealthy) {
+        backendStatus.className = 'backend-status online';
+        backendStatus.innerHTML = '<span class="status-dot"></span> Backend Connected';
+        // Enable drop zone and buttons
+        if (dropZone) dropZone.style.pointerEvents = 'auto';
+        if (generateBtn) generateBtn.disabled = false;
+    } else {
+        backendStatus.className = 'backend-status offline';
+        backendStatus.innerHTML = '<span class="status-dot"></span> Backend Offline';
+        // Disable drop zone and buttons
+        if (dropZone) {
+            dropZone.style.pointerEvents = 'none';
+            dropZone.style.opacity = '0.5';
+        }
+        if (generateBtn) generateBtn.disabled = true;
+    }
+}
+
 // Initialize popup
 async function init() {
+    // Check backend health
+    const isHealthy = await checkBackendHealth();
+    showBackendStatus(isHealthy);
+
+    // Poll backend health every 10 seconds
+    setInterval(async () => {
+        const isHealthy = await checkBackendHealth();
+        showBackendStatus(isHealthy);
+    }, 10000);
+
     // Check if resume is already uploaded
     const { resumeUploaded } = await chrome.storage.local.get(['resumeUploaded']);
 
@@ -27,7 +138,49 @@ async function init() {
 }
 
 // Event Listeners
-uploadBtn.addEventListener('click', () => {
+
+// Prevent default drag behaviors on entire document
+['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    dropZone.addEventListener(eventName, preventDefaults, false);
+    document.body.addEventListener(eventName, preventDefaults, false);
+});
+
+function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+}
+
+// Highlight drop zone when dragging over
+['dragenter', 'dragover'].forEach(eventName => {
+    dropZone.addEventListener(eventName, () => {
+        dropZone.classList.add('drag-over');
+    }, false);
+});
+
+['dragleave', 'drop'].forEach(eventName => {
+    dropZone.addEventListener(eventName, () => {
+        dropZone.classList.remove('drag-over');
+    }, false);
+});
+
+// Handle dropped files
+dropZone.addEventListener('drop', async (e) => {
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+        const file = files[0];
+
+        // Validate file type
+        if (!file.name.toLowerCase().endsWith('.pdf')) {
+            showError('Please drop a PDF file');
+            return;
+        }
+
+        await uploadResume(file);
+    }
+}, false);
+
+// Handle click to browse
+dropZone.addEventListener('click', () => {
     resumeInput.click();
 });
 
@@ -47,9 +200,51 @@ generateBtn.addEventListener('click', async () => {
     await generateDocuments();
 });
 
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+    // Ctrl/Cmd + U: Upload resume
+    if ((e.ctrlKey || e.metaKey) && e.key === 'u') {
+        e.preventDefault();
+        if (!uploadSection.classList.contains('hidden')) {
+            resumeInput.click();
+        }
+    }
+
+    // Ctrl/Cmd + G: Generate documents
+    if ((e.ctrlKey || e.metaKey) && e.key === 'g') {
+        e.preventDefault();
+        if (!successSection.classList.contains('hidden') && !generateBtn.disabled) {
+            generateDocuments();
+        }
+    }
+
+    // Escape: Clear status messages
+    if (e.key === 'Escape') {
+        uploadStatus.textContent = '';
+        uploadStatus.className = 'status-message';
+        jobStatus.textContent = '';
+        jobStatus.className = 'status-message';
+    }
+});
+
+// Button state management helper
+function setButtonLoading(button, isLoading, originalText) {
+    if (isLoading) {
+        button.disabled = true;
+        button.dataset.originalText = button.textContent;
+        button.textContent = 'Processing...';
+        button.classList.add('loading');
+    } else {
+        button.disabled = false;
+        button.textContent = button.dataset.originalText || originalText;
+        button.classList.remove('loading');
+    }
+}
+
 // Generate resume and cover letter for current job posting
 async function generateDocuments() {
     try {
+        setButtonLoading(generateBtn, true);
         // Step 1: Extract and capture job posting
         showLoadingWithProgress(
             1, 3,
@@ -167,6 +362,8 @@ async function generateDocuments() {
         console.error('[JobApp] Error generating documents:', error);
         showJobError(error.message || 'Failed to generate documents. Please try again.');
         showSuccessState();
+    } finally {
+        setButtonLoading(generateBtn, false, 'Generate Resume & Cover Letter');
     }
 }
 
@@ -185,6 +382,9 @@ async function uploadResume(file) {
     }
 
     try {
+        // Disable drop zone during upload
+        dropZone.style.pointerEvents = 'none';
+        dropZone.style.opacity = '0.6';
         // Show loading state
         showLoadingWithProgress(1, 1, 'Uploading Resume', 'Analyzing your resume with AI...');
 
@@ -217,6 +417,10 @@ async function uploadResume(file) {
         console.error('Upload error:', error);
         showError(error.message || 'Failed to upload resume. Please try again.');
         showUploadState();
+    } finally {
+        // Re-enable drop zone
+        dropZone.style.pointerEvents = 'auto';
+        dropZone.style.opacity = '1';
     }
 }
 
@@ -233,21 +437,22 @@ function showLoadingWithProgress(step, total, title, detail) {
     loadingText.textContent = title;
     loadingProgress.textContent = `Step ${step} of ${total}`;
     loadingDetail.textContent = detail;
-    statusText.textContent = 'Processing...';
 }
 
 function showUploadState() {
     uploadSection.classList.remove('hidden');
     successSection.classList.add('hidden');
     loadingIndicator.classList.add('hidden');
-    statusText.textContent = 'Ready';
+    // Reset drop zone if backend is online
+    if (backendStatus.classList.contains('online')) {
+        dropZone.style.opacity = '1';
+    }
 }
 
 function showSuccessState() {
     uploadSection.classList.add('hidden');
     successSection.classList.remove('hidden');
     loadingIndicator.classList.add('hidden');
-    statusText.textContent = 'Resume uploaded';
 }
 
 function showLoading() {
@@ -257,7 +462,6 @@ function showLoading() {
     uploadStatus.textContent = '';
     uploadStatus.className = 'status-message';
     loadingText.textContent = 'Processing resume...';
-    statusText.textContent = 'Processing...';
 }
 
 function showLoadingForJob(message = 'Capturing job posting...') {
@@ -267,21 +471,37 @@ function showLoadingForJob(message = 'Capturing job posting...') {
     jobStatus.textContent = '';
     jobStatus.className = 'status-message';
     loadingText.textContent = message;
-    statusText.textContent = 'Processing...';
+}
+
+// Format paths in messages
+function formatPath(message) {
+    // Wrap paths in code tags for better styling
+    return message.replace(/(~\/JobAgentWorkspace\/[^\s]+)/g, '<code>$1</code>');
 }
 
 function showError(message) {
-    uploadStatus.textContent = message;
+    const enhancedMessage = enhanceErrorMessage(message);
+    uploadStatus.innerHTML = enhancedMessage;
     uploadStatus.className = 'status-message error';
 }
 
 function showJobSuccess(message) {
-    jobStatus.textContent = message;
-    jobStatus.className = 'status-message success';
+    const formattedMessage = formatPath(message);
+    jobStatus.innerHTML = `
+        <div class="success-animation">
+            <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+                <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+            </svg>
+        </div>
+        <div class="success-text">${formattedMessage}</div>
+    `;
+    jobStatus.className = 'status-message success animated';
 }
 
 function showJobError(message) {
-    jobStatus.textContent = message;
+    const enhancedMessage = enhanceErrorMessage(message);
+    jobStatus.innerHTML = enhancedMessage;
     jobStatus.className = 'status-message error';
 }
 

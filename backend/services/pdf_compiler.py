@@ -21,12 +21,13 @@ class PDFCompilerService:
         return shutil.which("pdflatex") is not None
 
     @staticmethod
-    def compile_latex_to_pdf(tex_file_path: Path) -> Path:
+    def compile_latex_to_pdf(tex_file_path: Path, cls_files: list[Path] = None) -> Path:
         """
         Compile a LaTeX file to PDF using pdflatex.
 
         Args:
             tex_file_path: Path to the .tex file
+            cls_files: Optional list of .cls files to copy to work directory
 
         Returns:
             Path: Path to the generated PDF file
@@ -42,11 +43,25 @@ class PDFCompilerService:
         if not tex_file_path.exists():
             raise ValueError(f"LaTeX file not found: {tex_file_path}")
 
+        # Track copied .cls files for cleanup
+        copied_cls_files = []
+
         try:
             logger.info(f"Compiling LaTeX file: {tex_file_path}")
 
             # Get the directory containing the .tex file
             work_dir = tex_file_path.parent
+
+            # Copy .cls files to work directory if provided
+            if cls_files:
+                for cls_file in cls_files:
+                    if cls_file.exists():
+                        dest = work_dir / cls_file.name
+                        shutil.copy(cls_file, dest)
+                        copied_cls_files.append(dest)
+                        logger.info(f"Copied template class file: {cls_file.name}")
+                    else:
+                        logger.warning(f"Class file not found: {cls_file}")
 
             # Run pdflatex twice to resolve references
             # First pass
@@ -93,14 +108,28 @@ class PDFCompilerService:
             # Clean up auxiliary files
             PDFCompilerService._cleanup_aux_files(tex_file_path)
 
+            # Clean up copied .cls files
+            for cls_file in copied_cls_files:
+                try:
+                    cls_file.unlink(missing_ok=True)
+                    logger.debug(f"Removed copied class file: {cls_file.name}")
+                except Exception as e:
+                    logger.warning(f"Failed to remove copied class file {cls_file}: {e}")
+
             logger.info(f"Successfully compiled PDF: {pdf_path}")
             return pdf_path
 
         except subprocess.TimeoutExpired:
+            # Clean up copied .cls files on error
+            for cls_file in copied_cls_files:
+                cls_file.unlink(missing_ok=True)
             logger.error("pdflatex compilation timed out")
             raise ValueError("PDF compilation timed out after 60 seconds")
 
         except Exception as e:
+            # Clean up copied .cls files on error
+            for cls_file in copied_cls_files:
+                cls_file.unlink(missing_ok=True)
             logger.error(f"Error compiling LaTeX to PDF: {str(e)}")
             raise ValueError(f"Failed to compile PDF: {str(e)}")
 
