@@ -78,6 +78,18 @@ const generateResumeBtn = document.getElementById('generateResumeBtn');
 const generateCoverBtn = document.getElementById('generateCoverBtn');
 const loadingText = document.getElementById('loadingText');
 
+function resetUploadStatus() {
+    if (!uploadStatus) return;
+    uploadStatus.textContent = '';
+    uploadStatus.className = 'status-message';
+}
+
+function setUploadStatusHTML(html, className = 'status-message') {
+    if (!uploadStatus) return;
+    uploadStatus.innerHTML = html;
+    uploadStatus.className = className;
+}
+
 // Check backend health
 async function checkBackendHealth() {
     try {
@@ -239,8 +251,7 @@ document.addEventListener('keydown', (e) => {
 
     // Escape: Clear status messages
     if (e.key === 'Escape') {
-        uploadStatus.textContent = '';
-        uploadStatus.className = 'status-message';
+        resetUploadStatus();
     }
 });
 
@@ -484,8 +495,7 @@ function showLoading() {
     uploadSection.classList.add('hidden');
     successSection.classList.add('hidden');
     loadingIndicator.classList.remove('hidden');
-    uploadStatus.textContent = '';
-    uploadStatus.className = 'status-message';
+    resetUploadStatus();
     loadingText.textContent = 'Processing resume...';
 }
 
@@ -494,8 +504,7 @@ function showLoadingForJob(message = 'Capturing job posting...') {
     successSection.classList.add('hidden');
     loadingIndicator.classList.remove('hidden');
     // jobStatus element removed; use uploadStatus for interim messages if needed
-    uploadStatus.textContent = '';
-    uploadStatus.className = 'status-message';
+    resetUploadStatus();
     loadingText.textContent = message;
 }
 
@@ -507,30 +516,28 @@ function formatPath(message) {
 
 function showError(message) {
     const enhancedMessage = enhanceErrorMessage(message);
-    uploadStatus.innerHTML = enhancedMessage;
-    uploadStatus.className = 'status-message error';
+    setUploadStatusHTML(enhancedMessage, 'status-message error');
 }
 
 function showJobSuccess(message) {
     const formattedMessage = formatPath(message);
     // show job success in the uploadStatus area instead (jobStatus removed)
-    uploadStatus.innerHTML = `
+    setUploadStatusHTML(`
         <div class="success-animation">
             <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
                 <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
                 <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
             </svg>
         </div>
-        <div class="success-text">${formattedMessage}</div>
-    `;
-    uploadStatus.className = 'status-message success animated';
+        <div class="success-text">${formattedMessage}</div>`,
+        'status-message success animated'
+    );
 }
 
 function showJobError(message) {
     const enhancedMessage = enhanceErrorMessage(message);
     // show job error in the uploadStatus area instead (jobStatus removed)
-    uploadStatus.innerHTML = enhancedMessage;
-    uploadStatus.className = 'status-message error';
+    setUploadStatusHTML(enhancedMessage, 'status-message error');
 }
 
 // Initialize on load

@@ -25,7 +25,7 @@
     --bg-900: rgba(10,12,15,0.85);
     --panel-bg: rgba(0,0,0,0.03);
     --panel-border: rgba(255,255,255,0.14);
-    --glass-blur: 10.5px;
+    --glass-blur: 7.5px; /*og value = 10.5px */
     --muted: rgba(255,255,255,0.6);
     --muted-2: rgba(255,255,255,0.45);
     --accent: rgba(255,255,255,0.14);
@@ -125,11 +125,12 @@ body {
 .popup-header {
     margin-bottom: 10px;
     padding: 15px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.08));
+    background: linear-gradient(180deg, rgba(255,255,255,0.11), rgba(255,255,255,0.08));
     border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.095);
     backdrop-filter: blur(var(--glass-blur));
     -webkit-backdrop-filter: blur(var(--glass-blur));
+    box-shadow: 0 10px 30px rgba(2,6,23,0.5);
 }
 
 /* Backend status pill shown at the top of the popup */
@@ -141,7 +142,7 @@ body {
     /* smaller padding so pill hugs text */
     padding: 4px 10px;
     border-radius: 999px;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
     color: var(--primary);
     backdrop-filter: blur(var(--glass-blur));
@@ -161,14 +162,14 @@ body {
 .backend-pill.online {
     background: linear-gradient(180deg, rgba(46,125,50,0.12), rgba(46,125,50,0.06));
     box-shadow: 0 8px 20px rgba(27,94,32,0.25), inset 0 0 12px rgba(27,94,32,0.12);
-    border: 1px solid rgba(27,94,32,0.25);
+    border: 1px solid rgba(27, 145, 35, 0.45);
     color: #e8ffea;
 }
 
 .backend-pill.offline {
     background: linear-gradient(180deg, rgba(198,40,40,0.12), rgba(198,40,40,0.06));
     box-shadow: 0 8px 20px rgba(142,0,0,0.25), inset 0 0 12px rgba(142,0,0,0.12);
-    border: 1px solid rgba(142,0,0,0.25);
+    border: 1px solid rgba(142,0,0,0.45);
     color: #ffdede;
 }
 
@@ -197,6 +198,14 @@ body {
     background: transparent;
     border-radius: 16px;
     border: none;
+}
+
+#uploadSection.section {
+    padding: 0;
+}
+
+#uploadSection .drop-zone {
+    width: 100%;
 }
 
 .hidden {
@@ -266,34 +275,38 @@ body {
 
 /* Drop Zone Styles */
 .drop-zone {
-    border: 1px dashed rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.095);
     border-radius: 12px;
-    padding: 24px 16px;
+    padding: 15px;
     text-align: center;
     cursor: pointer;
     transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
-    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    background: linear-gradient(180deg, rgba(255,255,255,0.11), rgba(255,255,255,0.08));
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    box-shadow: 0 10px 30px rgba(2,6,23,0.5);
 }
 
 .drop-zone:hover {
-    border-color: #1A1A1A;
-    background: linear-gradient(135deg, #f5f5f5 0%, #f3f3f3 100%);
+    border-color: rgba(255,255,255,0.2);
+    background: linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0.12));
     transform: translateY(-2px);
+    box-shadow: 0 12px 34px rgba(2,6,23,0.55);
 }
 
 .drop-zone.drag-over {
-    border-color: #4CAF50;
-    background: linear-gradient(135deg, #e8f5e9 0%, #e6f7e7 100%);
-    border-width: 3px;
+    border-color: rgba(76,175,80,0.4);
+    background: linear-gradient(180deg, rgba(76,175,80,0.16), rgba(76,175,80,0.08));
+    box-shadow: 0 12px 32px rgba(27,94,32,0.35);
 }
 
 .upload-icon {
-    color: #666;
+    color: rgba(255,255,255,0.85);
     margin-bottom: 12px;
 }
 
 .drop-zone.drag-over .upload-icon {
-    color: #4CAF50;
+    color: #dfffe0;
 }
 
 .drop-zone-text {
@@ -314,7 +327,7 @@ body {
 
 .drop-zone-hint {
     font-size: 11px;
-    color: #999;
+    color: var(--muted-2);
 }
 
 .secondary-button {
