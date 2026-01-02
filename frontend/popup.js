@@ -72,9 +72,10 @@ const successSection = document.getElementById('successSection');
 const loadingIndicator = document.getElementById('loadingIndicator');
 const uploadStatus = document.getElementById('uploadStatus');
 const backendStatus = document.getElementById('backendStatus');
+const backendPill = document.getElementById('backendPill');
 const reuploadBtn = document.getElementById('reuploadBtn');
-const generateBtn = document.getElementById('generateBtn');
-const jobStatus = document.getElementById('jobStatus');
+const generateResumeBtn = document.getElementById('generateResumeBtn');
+const generateCoverBtn = document.getElementById('generateCoverBtn');
 const loadingText = document.getElementById('loadingText');
 
 // Check backend health
@@ -100,18 +101,28 @@ function showBackendStatus(isHealthy) {
     if (isHealthy) {
         backendStatus.className = 'backend-status online';
         backendStatus.innerHTML = '<span class="status-dot"></span> Backend Connected';
+        if (backendPill) {
+            backendPill.className = 'backend-pill online';
+            backendPill.textContent = 'Online';
+        }
         // Enable drop zone and buttons
         if (dropZone) dropZone.style.pointerEvents = 'auto';
-        if (generateBtn) generateBtn.disabled = false;
+        if (generateResumeBtn) generateResumeBtn.disabled = false;
+        if (generateCoverBtn) generateCoverBtn.disabled = false;
     } else {
         backendStatus.className = 'backend-status offline';
         backendStatus.innerHTML = '<span class="status-dot"></span> Backend Offline';
+        if (backendPill) {
+            backendPill.className = 'backend-pill offline';
+            backendPill.textContent = 'Offline';
+        }
         // Disable drop zone and buttons
         if (dropZone) {
             dropZone.style.pointerEvents = 'none';
             dropZone.style.opacity = '0.5';
         }
-        if (generateBtn) generateBtn.disabled = true;
+        if (generateResumeBtn) generateResumeBtn.disabled = true;
+        if (generateCoverBtn) generateCoverBtn.disabled = true;
     }
 }
 
@@ -196,9 +207,17 @@ reuploadBtn.addEventListener('click', () => {
     resumeInput.value = ''; // Clear file input
 });
 
-generateBtn.addEventListener('click', async () => {
-    await generateDocuments();
-});
+if (generateResumeBtn) {
+    generateResumeBtn.addEventListener('click', async () => {
+        await generateDocuments('resume', generateResumeBtn);
+    });
+}
+
+if (generateCoverBtn) {
+    generateCoverBtn.addEventListener('click', async () => {
+        await generateDocuments('cover', generateCoverBtn);
+    });
+}
 
 // Keyboard shortcuts
 document.addEventListener('keydown', (e) => {
@@ -210,11 +229,11 @@ document.addEventListener('keydown', (e) => {
         }
     }
 
-    // Ctrl/Cmd + G: Generate documents
+    // Ctrl/Cmd + G: Generate documents (trigger Resume generate)
     if ((e.ctrlKey || e.metaKey) && e.key === 'g') {
         e.preventDefault();
-        if (!successSection.classList.contains('hidden') && !generateBtn.disabled) {
-            generateDocuments();
+        if (!successSection.classList.contains('hidden') && generateResumeBtn && !generateResumeBtn.disabled) {
+            generateResumeBtn.click();
         }
     }
 
@@ -222,8 +241,6 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
         uploadStatus.textContent = '';
         uploadStatus.className = 'status-message';
-        jobStatus.textContent = '';
-        jobStatus.className = 'status-message';
     }
 });
 
@@ -242,9 +259,9 @@ function setButtonLoading(button, isLoading, originalText) {
 }
 
 // Generate resume and cover letter for current job posting
-async function generateDocuments() {
+async function generateDocuments(docType = 'both', button = null) {
     try {
-        setButtonLoading(generateBtn, true);
+        if (button) setButtonLoading(button, true);
         // Step 1: Extract and capture job posting
         showLoadingWithProgress(
             1, 3,
@@ -337,7 +354,8 @@ async function generateDocuments() {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                job_slug: jobSlug
+                job_slug: jobSlug,
+                doc_type: docType
             })
         });
 
@@ -350,7 +368,14 @@ async function generateDocuments() {
             if (generateResult.status === 'latex_only') {
                 showJobSuccess(`Documents generated! LaTeX files saved to: ${workspacePath}. Note: ${generateResult.error}`);
             } else {
-                showJobSuccess(`Documents generated! PDFs saved to: ${workspacePath}`);
+                // tailor message based on requested docType
+                if (docType === 'resume') {
+                    showJobSuccess(`Resume generated! PDFs saved to: ${workspacePath}`);
+                } else if (docType === 'cover') {
+                    showJobSuccess(`Cover letter generated! PDFs saved to: ${workspacePath}`);
+                } else {
+                    showJobSuccess(`Documents generated! PDFs saved to: ${workspacePath}`);
+                }
             }
 
             showSuccessState();
@@ -363,7 +388,7 @@ async function generateDocuments() {
         showJobError(error.message || 'Failed to generate documents. Please try again.');
         showSuccessState();
     } finally {
-        setButtonLoading(generateBtn, false, 'Generate Resume & Cover Letter');
+        if (button) setButtonLoading(button, false);
     }
 }
 
@@ -468,8 +493,9 @@ function showLoadingForJob(message = 'Capturing job posting...') {
     uploadSection.classList.add('hidden');
     successSection.classList.add('hidden');
     loadingIndicator.classList.remove('hidden');
-    jobStatus.textContent = '';
-    jobStatus.className = 'status-message';
+    // jobStatus element removed; use uploadStatus for interim messages if needed
+    uploadStatus.textContent = '';
+    uploadStatus.className = 'status-message';
     loadingText.textContent = message;
 }
 
@@ -487,7 +513,8 @@ function showError(message) {
 
 function showJobSuccess(message) {
     const formattedMessage = formatPath(message);
-    jobStatus.innerHTML = `
+    // show job success in the uploadStatus area instead (jobStatus removed)
+    uploadStatus.innerHTML = `
         <div class="success-animation">
             <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
                 <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
@@ -496,13 +523,14 @@ function showJobSuccess(message) {
         </div>
         <div class="success-text">${formattedMessage}</div>
     `;
-    jobStatus.className = 'status-message success animated';
+    uploadStatus.className = 'status-message success animated';
 }
 
 function showJobError(message) {
     const enhancedMessage = enhanceErrorMessage(message);
-    jobStatus.innerHTML = enhancedMessage;
-    jobStatus.className = 'status-message error';
+    // show job error in the uploadStatus area instead (jobStatus removed)
+    uploadStatus.innerHTML = enhancedMessage;
+    uploadStatus.className = 'status-message error';
 }
 
 // Initialize on load

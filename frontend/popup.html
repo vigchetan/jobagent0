@@ -8,6 +8,8 @@
 </head>
 <body>
     <div class="popup-container">
+        <!-- Backend status pill (glassmorphism) -->
+        <div id="backendPill" class="backend-pill checking">Checking...</div>
         <div class="popup-header">
             <div class="popup-title">JobAgent0</div>
             <div class="popup-description">AI-powered resume and cover letter generation</div>
@@ -39,15 +41,19 @@
         <div id="successSection" class="section hidden">
             <div class="success-icon">✓</div>
             <p class="success-message">Resume uploaded successfully!</p>
-            <div class="button-group">
-                <button class="primary-button" id="generateBtn">
-                    Generate Resume & Cover Letter
+            <div class="button-group row">
+                <button class="primary-button" id="generateResumeBtn">
+                    Generate Resume
                 </button>
+                <button class="primary-button" id="generateCoverBtn">
+                    Generate Cover Letter
+                </button>
+            </div>
+            <div class="button-group">
                 <button class="secondary-button" id="reuploadBtn">
                     Upload Different Resume
                 </button>
             </div>
-            <div id="jobStatus" class="status-message"></div>
         </div>
 
         <!-- Loading Indicator -->
