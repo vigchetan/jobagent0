@@ -24,12 +24,12 @@
 :root{
     --bg-900: rgba(10,12,15,0.85);
     --panel-bg: rgba(0,0,0,0.03);
-    --panel-border: rgba(0,0,0,0.08);
-    --glass-blur: 10px;
-    --muted: rgba(0,0,0,0.7);
-    --muted-2: rgba(0,0,0,0.55);
+    --panel-border: rgba(255,255,255,0.14);
+    --glass-blur: 10.5px;
+    --muted: rgba(255,255,255,0.6);
+    --muted-2: rgba(255,255,255,0.45);
     --accent: rgba(255,255,255,0.14);
-    --primary: #000000;
+    --primary: #cfcfcf;
     --online: #2e7d32;
     --online-dark: #1b5e20;
     --offline: #c62828;
@@ -40,26 +40,96 @@ body {
     font-family: 'Reddit Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     width: 350px;
     min-height: 400px;
+    margin: 0;
     background: #ffffff;
     color: var(--primary);
 }
 
 .popup-container {
     padding: 20px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+    background: #1b1b1b;
     border: 1px solid var(--panel-border);
     backdrop-filter: blur(var(--glass-blur));
     -webkit-backdrop-filter: blur(var(--glass-blur));
     border-radius: 0;
-    box-shadow: 0 8px 30px rgba(2,6,23,0.6);
+    /* allow absolutely-positioned background layers inside */
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.35);
+}
+
+/* Ensure content sits above the animated background */
+/* Ensure popup content sits above the shader canvas */
+.popup-container > :not(#shader) {
+    position: relative;
+    z-index: 1;
+}
+
+/* Shader container covers popup and sits behind content */
+#shader {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+#shader canvas {
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
+}
+
+/* Fallback message if shader/Three.js failed to load */
+.shader-fallback {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 0;
+    color: rgba(255,255,255,0.95);
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+    padding: 10px;
+    background: radial-gradient(circle at 30% 30%, rgba(0,150,255,0.14), rgba(255,75,96,0.06));
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border-radius: 8px;
+    margin: 12px;
+    opacity: 0.95;
+    pointer-events: none;
+}
+
+/* Small pulsing highlight to make fallback obvious */
+.shader-fallback::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 8px;
+    box-shadow: 0 8px 30px rgba(2,6,23,0.35) inset;
+    pointer-events: none;
+}
+
+/* Smaller screens: reduce blur/size for performance */
+@media (max-width: 420px) {
+    .background-gradient .bg-layer { filter: blur(48px); }
+}
+
+/* Respect user's reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+    .background-gradient .bg-layer { transition: none !important; transform: none !important; }
 }
 
 .popup-header {
     margin-bottom: 10px;
     padding: 15px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    background: linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.08));
     border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.18);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
 }
 
 /* Backend status pill shown at the top of the popup */
@@ -83,6 +153,9 @@ body {
     /* size to content and center inside container */
     width: auto;
     margin: 0 auto 12px auto;
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 .backend-pill.online {
@@ -121,9 +194,9 @@ body {
 .section {
     margin-bottom: 10px;
     padding: 16px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    background: transparent;
     border-radius: 16px;
-    border: 1px solid rgba(255,255,255,0.03);
+    border: none;
 }
 
 .hidden {
@@ -151,16 +224,19 @@ body {
 .primary-button {
     flex: 1 1 0;
     padding: 12px 16px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.04));
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
     color: var(--primary);
-    border: 1px solid rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
     border-radius: 12px;
     font-size: 14px;
     font-weight: 500;
+    font-family: 'Reddit Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     cursor: pointer;
     transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 6px 18px rgba(2,6,23,0.6);
     text-align: center;
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
 }
 
 .primary-button:hover {
@@ -244,16 +320,19 @@ body {
 .secondary-button {
     flex: 1 1 0;
     padding: 12px 16px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.04));
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
     color: var(--primary);
-    border: 1px solid rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
     border-radius: 12px;
     font-size: 14px;
     font-weight: 500;
+    font-family: 'Reddit Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     cursor: pointer;
     transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 6px 18px rgba(2,6,23,0.6);
     text-align: center;
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
 }
 
 .secondary-button:hover {
@@ -308,7 +387,7 @@ body {
     padding: 2px 6px;
     background: rgba(0, 0, 0, 0.05);
     border-radius: 4px;
-    font-family: 'Courier New', monospace;
+    font-family: 'Reddit Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-size: 11px;
     max-width: 100%;
     word-break: break-all;
@@ -478,18 +557,49 @@ body {
 .popup-footer {
     display: flex;
     flex-direction: column;
+    align-items: center;
+    justify-content: center;
     gap: 8px;
     text-align: center;
     font-size: 11px;
     color: var(--muted);
     padding: 12px 15px;
     /* match header width by keeping footer inside the container padding */
-    margin: 12px 0 0 0;
+    margin: 12px auto 0 auto;
+    align-self: center;
+    width: fit-content;
+    max-width: 100%;
     background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-    border: 1px solid rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
     border-radius: 12px;
     backdrop-filter: blur(var(--glass-blur));
     -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+.applied-counter {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 12px;
+    color: var(--muted);
+    padding: 12px 15px;
+    margin: 10px 0 0 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+.applied-counter-line {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.applied-counter .success-message {
+    margin: 0;
+    font-size: 13px;
 }
 
 /* Backend Status Indicator */
@@ -558,7 +668,7 @@ kbd {
     background: linear-gradient(135deg, #f5f5f5 0%, #efefef 100%);
     border: 1px solid #ccc;
     border-radius: 4px;
-    font-family: monospace;
+    font-family: 'Reddit Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-size: 10px;
     color: #333;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);

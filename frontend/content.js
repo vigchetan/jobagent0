@@ -89,7 +89,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       console.log('[JobApp] Successfully extracted job posting');
       console.log('[JobApp] Text length:', rawText.length);
       console.log('[JobApp] URL:', url);
-
       showNotification('Job posting captured!', 'success');
 
       // Send the extracted data back to the popup
