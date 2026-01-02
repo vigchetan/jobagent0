@@ -201,3 +201,131 @@ INSTRUCTIONS:
 Generate a professionally formatted resume that uses the template structure with personalized content. Return ONLY the complete LaTeX code."""
 
     return prompt
+
+
+JINJA2_TEMPLATE_RESUME_SYSTEM_PROMPT = """You are an expert resume writer specializing in creating structured JSON data to populate LaTeX resume templates.
+
+Your task is to analyze a candidate's resume and job posting, then generate a JSON object containing tailored resume content that will be used to populate a professional LaTeX template.
+
+CRITICAL REQUIREMENTS:
+1. Generate ONLY a valid JSON object - no markdown code blocks, no explanations, no additional text
+2. Select 3-5 most relevant projects from the candidate's resume that match job requirements
+3. Highlight technologies and skills explicitly mentioned in the job description
+4. Tailor project bullet points to emphasize relevant achievements for this specific role
+5. Use action verbs (Built, Implemented, Architected, etc.) and quantifiable metrics
+6. Pre-format strings as comma-separated lists where appropriate
+7. Format date ranges consistently (e.g., "Jun 2021 - Present", "May 2020")
+8. Ensure ALL factual information is accurate from the resume - DO NOT fabricate experiences
+9. Prioritize most relevant content first in each section (most relevant project first, etc.)
+
+JSON STRUCTURE (required keys):
+{
+  "contact": {
+    "name": "Full Name from resume",
+    "phone": "+1(XXX) XXX-XXXX or null",
+    "location": "City, State or null",
+    "email": "email@example.com",
+    "linkedin": "linkedin.com/in/username or null",
+    "github": "github.com/username or null",
+    "website": "www.website.com or null"
+  },
+  "projects": [
+    {
+      "name": "Project Name",
+      "technologies": "Tech1, Tech2, Tech3, Tech4",  # comma-separated string
+      "bullets": [
+        "Achievement bullet point with quantifiable metrics (20% improvement, 1000+ users, etc.)",
+        "Another accomplishment using action verbs and technical details",
+        "Implementation detail highlighting relevant technologies",
+        "Impact or business value achieved (reduced costs, improved performance, etc.)"
+      ]
+    }
+    # Include 3-5 most relevant projects
+  ],
+  "skills": {
+    "languages": "Language1, Language2, Language3",  # comma-separated
+    "frameworks": "Framework1, Framework2, Framework3",  # comma-separated
+    "tools": "Tool1, Tool2, Tool3",  # comma-separated
+    "soft_skills": "Skill1, Skill2, Skill3, Skill4"  # comma-separated
+  },
+  "education": [
+    {
+      "degree": "Degree Name (e.g., BS in Computer Science, Software Development Certificate)",
+      "institution": "Institution Name",
+      "field": "Field of Study or null if not applicable",
+      "date": "Month Year (e.g., May 2020, Jan 2023)"
+    }
+    # Include all education entries
+  ],
+  "work_experience": [
+    {
+      "title": "Job Title",
+      "company": "Company Name",
+      "date_range": "Month Year - Month Year or Month Year - Present"
+    }
+    # Include work experience if present (can be empty list)
+  ]
+}
+
+PRIORITIZATION STRATEGY:
+- For projects: Choose those that best match the job's required technologies and skills
+- For skills: List job-required skills first, then additional relevant skills
+- For bullets: Lead with achievements that directly relate to job requirements
+- Emphasize technologies mentioned in job description
+
+OUTPUT FORMAT:
+Return ONLY the JSON object. No markdown code blocks (no ```json), no explanations before or after.
+The response will be directly parsed with json.loads() so it must be valid JSON."""
+
+
+def build_jinja2_resume_prompt(
+    resume_json: dict,
+    job_data: dict,
+    template_name: str
+) -> str:
+    """
+    Constructs the prompt for Jinja2-based resume generation.
+
+    This prompt instructs the AI to generate structured JSON data (not LaTeX code)
+    that will be used to populate a Jinja2 template.
+
+    Args:
+        resume_json: The parsed resume data as dictionary
+        job_data: The job posting data as dictionary
+        template_name: Name of the Jinja2 template being used
+
+    Returns:
+        str: The complete prompt for the LLM
+    """
+    import json
+
+    prompt = f"""Generate structured JSON data to populate a resume template for this job application.
+
+TEMPLATE BEING USED: {template_name}.j2.tex
+
+CANDIDATE'S RESUME DATA:
+{json.dumps(resume_json, indent=2)}
+
+TARGET JOB POSTING:
+Company: {job_data.get('company', 'N/A')}
+Position: {job_data.get('job_title', 'N/A')}
+Location: {job_data.get('location', 'N/A')}
+
+Job Description:
+{job_data.get('job_description', 'N/A')}
+
+SPECIFIC INSTRUCTIONS:
+1. Extract contact information from the candidate's resume (name, phone, email, linkedin, github, website)
+2. Select 3-5 most relevant projects that match the job requirements and required technologies
+3. List skills with those mentioned in the job description appearing first
+4. Format all technology lists as comma-separated strings (e.g., "Python, JavaScript, React")
+5. Create compelling project bullet points with action verbs (Built, Implemented, Created) and metrics
+6. Format all date ranges consistently (e.g., "Jan 2023 - Present", "May 2020")
+7. For education, extract degree, institution, field of study, and graduation date
+8. Include work experience with title, company, and date range
+9. Ensure ALL information is factually accurate from the candidate's resume - DO NOT fabricate
+
+CRITICAL: Generate ONLY the JSON object. No markdown, no explanations, just the JSON.
+The JSON will be directly parsed, so it must be perfectly valid."""
+
+    return prompt

@@ -1,0 +1,102 @@
+\documentclass{resume} % Use the custom resume.cls style
+
+\usepackage[left=0.4 in,top=0.4in,right=0.4 in,bottom=0.4in]{geometry} % Document margins
+\newcommand{\tab}[1]{\hspace{.2667\textwidth}\rlap{#1}}
+\newcommand{\itab}[1]{\hspace{0em}\rlap{#1}}
+
+{# Contact Information #}
+\name{ {{- contact.name -}} }
+
+{# Build first address line with phone and/or location #}
+{% if contact.phone and contact.location %}
+\address{ {{- contact.phone }} \\ {{ contact.location -}} }
+{% elif contact.phone %}
+\address{ {{- contact.phone -}} }
+{% elif contact.location %}
+\address{ {{- contact.location -}} }
+{% endif %}
+
+{# Build second address line with email, linkedin, and website #}
+{%- set address_parts = [] -%}
+{% if contact.email %}
+{%- set _ = address_parts.append('\\href{mailto:' + contact.email + '}{' + contact.email + '}') -%}
+{% endif %}
+{% if contact.linkedin %}
+{%- set _ = address_parts.append('\\href{https://' + contact.linkedin + '}{' + contact.linkedin + '}') -%}
+{% endif %}
+{% if contact.website %}
+{%- set _ = address_parts.append('\\href{' + contact.website + '}{' + contact.website + '}') -%}
+{% endif %}
+{% if address_parts %}
+\address{ {{- address_parts | join(' \\\\ ') -}} }
+{% endif %}
+
+\begin{document}
+
+{# Projects Section #}
+\begin{rSection}{PROJECTS}
+\vspace{-1.25em}
+{% for project in projects %}
+\item \textbf{ {{- project.name -}} } { {{- project.technologies -}} }
+\begin{itemize}
+    \itemsep -3pt {}
+    {%- for bullet in project.bullets %}
+    \item {{ bullet }}
+    {%- endfor %}
+\end{itemize}
+{% endfor %}
+\end{rSection}
+
+
+{# Skills Section #}
+\begin{rSection}{SKILLS}
+\begin{tabular}{ @{} >{\bfseries}l @{\hspace{6ex}} l }
+{% if skills.languages -%}
+Languages & {{ skills.languages }} \\
+{% endif -%}
+{% if skills.frameworks -%}
+Frameworks & {{ skills.frameworks }} \\
+{% endif -%}
+{% if skills.tools -%}
+Tools & {{ skills.tools }}\\
+{% endif -%}
+\\
+{% if skills.soft_skills -%}
+Soft Skills & {{ skills.soft_skills }}
+\\
+{% endif -%}
+\end{tabular}\\
+\end{rSection}
+
+
+{# Education Section #}
+\begin{rSection}{Education}
+
+{% for edu in education -%}
+{\bf {{ edu.degree }}{% if edu.field %} in {{ edu.field }}{% endif %}}, {{ edu.institution }} \hfill {{ edu.date }}{% if not loop.last %} \\{% endif %}
+
+{% endfor %}
+
+\end{rSection}
+
+{# Work Experience Section (optional) #}
+{% if work_experience %}
+\begin{rSection}{Work Experience}
+\vspace{-1.25em}
+{% for job in work_experience %}
+\item \textbf{ {{- job.title -}} } { {{- job.company -}} } \hfill {{ job.date_range }}
+{% endfor %}
+\end{rSection}
+{% endif %}
+
+
+{# Optional Awards Section (commented out - can be enabled if needed) #}
+{# \begin{rSection}{Awards}
+\vspace{-1.25em}
+{% for award in awards %}
+\item \textbf{ {{- award.title -}} } { {{- award.description -}} } \hfill {{ award.date }}
+{% endfor %}
+\end{rSection} #}
+
+
+\end{document}

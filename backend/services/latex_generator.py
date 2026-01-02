@@ -6,9 +6,13 @@ from backend.config.prompts import (
     RESUME_SYSTEM_PROMPT,
     build_cover_letter_prompt,
     build_resume_prompt,
-    build_template_resume_prompt
+    build_template_resume_prompt,
+    JINJA2_TEMPLATE_RESUME_SYSTEM_PROMPT,
+    build_jinja2_resume_prompt
 )
 from backend.services.template_manager import TemplateManager
+from backend.models.template_data import ResumeTemplateData
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 from pathlib import Path
 import logging
 import json
@@ -87,7 +91,10 @@ class LaTeXGeneratorService:
         """
         Generate a tailored resume in LaTeX format.
 
-        Tries template-based generation first, falls back to scratch generation if needed.
+        Priority order:
+        1. Try Jinja2 template (.j2.tex) → JSON generation + template rendering
+        2. Fallback to regular template (.tex) → AI-generated full LaTeX
+        3. Fallback to scratch generation → No template
 
         Args:
             resume_data: The parsed resume data as dictionary
@@ -98,11 +105,42 @@ class LaTeXGeneratorService:
             str: The generated LaTeX code
 
         Raises:
-            ValueError: If generation fails
+            ValueError: If all generation methods fail
         """
+        # Select template
+        template_name = self.template_manager.select_resume_template(
+            resume_data, job_data
+        )
+
+        if not template_name:
+            logger.info("No templates available, generating from scratch...")
+            return self._generate_resume_from_scratch(
+                resume_data, job_data, output_path
+            )
+
+        # Check if Jinja2 template exists (highest priority)
+        jinja2_path = self.template_manager.template_dir / f"{template_name}.j2.tex"
+
+        if jinja2_path.exists():
+            try:
+                logger.info("Attempting Jinja2 template-based generation...")
+                latex_code = self._generate_resume_with_jinja2_template(
+                    resume_data, job_data, output_path, template_name
+                )
+                logger.info("✅ Jinja2 template generation successful")
+                return latex_code
+
+            except Exception as e:
+                logger.warning(
+                    f"Jinja2 generation failed: {e}. "
+                    "Falling back to regular template generation."
+                )
+                # Reset cls_files since Jinja2 generation failed
+                self._cls_files = None
+
+        # Try regular template generation
         try:
-            # Try template-based generation first
-            logger.info("Attempting template-based resume generation...")
+            logger.info("Attempting regular template-based generation...")
             latex_code = self._generate_resume_with_template(
                 resume_data, job_data, output_path
             )
@@ -117,7 +155,8 @@ class LaTeXGeneratorService:
             # Reset cls_files since template generation failed
             self._cls_files = None
 
-            # Fallback to scratch generation
+            # Final fallback to scratch generation
+            logger.info("Falling back to scratch generation...")
             return self._generate_resume_from_scratch(
                 resume_data, job_data, output_path
             )
@@ -231,6 +270,146 @@ class LaTeXGeneratorService:
         except Exception as e:
             logger.error(f"Error generating resume: {str(e)}")
             raise ValueError(f"Failed to generate resume: {str(e)}")
+
+    def _generate_resume_with_jinja2_template(
+        self,
+        resume_data: dict,
+        job_data: dict,
+        output_path: Path,
+        template_name: str
+    ) -> str:
+        """
+        Generate resume using Jinja2 template with structured JSON data.
+
+        This method uses AI to generate structured JSON data (not full LaTeX),
+        then renders a Jinja2 template with that data for guaranteed consistency.
+
+        Args:
+            resume_data: The parsed resume data as dictionary
+            job_data: The job posting data as dictionary
+            output_path: Path where resume.tex should be saved
+            template_name: Name of the template (without .j2.tex extension)
+
+        Returns:
+            str: The generated LaTeX code
+
+        Raises:
+            ValueError: If generation or rendering fails
+        """
+        try:
+            # Check if Jinja2 template exists
+            template_file = f"{template_name}.j2.tex"
+            template_path = self.template_manager.template_dir / template_file
+
+            if not template_path.exists():
+                raise ValueError(f"Jinja2 template not found: {template_file}")
+
+            logger.info(f"Using Jinja2 template: {template_file}")
+
+            # Build prompt for AI to generate JSON data
+            user_prompt = build_jinja2_resume_prompt(
+                resume_data, job_data, template_name
+            )
+
+            # Create messages
+            messages = [
+                {"role": "system", "content": JINJA2_TEMPLATE_RESUME_SYSTEM_PROMPT},
+                {"role": "user", "content": user_prompt}
+            ]
+
+            # Use structured output for guaranteed JSON schema compliance
+            logger.info("Calling Gemini API for structured JSON generation...")
+            structured_llm = self.llm.with_structured_output(
+                schema=ResumeTemplateData,
+                method="json_mode"
+            )
+
+            # Generate structured data
+            template_data: ResumeTemplateData = structured_llm.invoke(messages)
+
+            logger.info("Successfully generated structured JSON data")
+            logger.debug(f"Generated data: {template_data.model_dump_json(indent=2)}")
+
+            # Configure Jinja2 environment for LaTeX
+            jinja_env = Environment(
+                loader=FileSystemLoader(self.template_manager.template_dir),
+                autoescape=False,  # Don't escape LaTeX commands
+                block_start_string='{%',
+                block_end_string='%}',
+                variable_start_string='{{',
+                variable_end_string='}}',
+                comment_start_string='{#',
+                comment_end_string='#}',
+                trim_blocks=True,  # Remove first newline after block
+                lstrip_blocks=True  # Strip leading whitespace before blocks
+            )
+
+            # Load and render template
+            template = jinja_env.get_template(template_file)
+            latex_code = template.render(**template_data.model_dump())
+
+            logger.info("Successfully rendered Jinja2 template")
+
+            # Store cls_files for PDF compilation
+            template_info = self.template_manager.get_template_info(template_name)
+            if template_info:
+                self._cls_files = template_info.cls_files
+                logger.info(f"Stored {len(self._cls_files)} .cls file(s) for compilation")
+
+            # Save to file
+            self._save_latex_file(latex_code, output_path)
+
+            logger.info(f"Jinja2-based resume LaTeX saved to: {output_path}")
+            return latex_code
+
+        except Exception as e:
+            logger.error(f"Error generating resume with Jinja2: {str(e)}")
+            raise ValueError(f"Failed to generate Jinja2 resume: {str(e)}")
+
+    def _extract_json_from_response(self, response_content: str) -> dict:
+        """
+        Extract and parse JSON from LLM response.
+
+        Handles markdown code blocks and validates JSON structure.
+        Used as fallback when structured output is not available.
+
+        Args:
+            response_content: The raw response from the LLM
+
+        Returns:
+            dict: Parsed JSON data
+
+        Raises:
+            ValueError: If JSON parsing fails or required keys are missing
+        """
+        content = response_content.strip()
+
+        # Remove markdown code blocks if present
+        if content.startswith("```json"):
+            content = content[len("```json"):].strip()
+        elif content.startswith("```"):
+            content = content[len("```"):].strip()
+
+        if content.endswith("```"):
+            content = content[:-len("```")].strip()
+
+        try:
+            data = json.loads(content)
+
+            # Validate required keys
+            required_keys = ["contact", "projects", "skills", "education"]
+            missing_keys = [k for k in required_keys if k not in data]
+
+            if missing_keys:
+                raise ValueError(f"Missing required keys in JSON: {missing_keys}")
+
+            logger.info("Successfully parsed and validated JSON response")
+            return data
+
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse JSON: {e}")
+            logger.error(f"Response content (first 500 chars): {content[:500]}...")
+            raise ValueError(f"Invalid JSON response from LLM: {e}")
 
     def _extract_latex_code(self, response_content: str) -> str:
         """

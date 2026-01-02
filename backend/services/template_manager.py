@@ -17,6 +17,8 @@ class TemplateInfo(BaseModel):
     """Information about a LaTeX template."""
     name: str  # Template name (e.g., "resume_coding_bootcamp")
     path: Path  # Absolute path to .tex template file
+    jinja2_path: Optional[Path] = None  # Absolute path to .j2.tex if exists
+    is_jinja2: bool = False  # True if Jinja2 template available
     cls_files: list[Path]  # List of .cls files required by this template
     document_class: str  # Document class used (e.g., "resume")
 
@@ -56,22 +58,32 @@ class TemplateManager:
 
     def discover_templates(self) -> dict[str, TemplateInfo]:
         """
-        Discover all .tex template files in the template directory.
+        Discover all template files (.tex and .j2.tex) in the template directory.
+
+        Jinja2 templates (.j2.tex) are preferred over regular templates (.tex).
+        For each template name, we check for both versions.
 
         Returns:
             dict[str, TemplateInfo]: Mapping of template names to TemplateInfo objects
         """
         templates = {}
 
-        # Find all .tex files in template directory
-        tex_files = list(self.template_dir.glob("*.tex"))
+        # Find all .tex files (excluding .j2.tex)
+        tex_files = [f for f in self.template_dir.glob("*.tex") if not f.name.endswith(".j2.tex")]
 
         for tex_file in tex_files:
             template_name = tex_file.stem  # Filename without extension
 
+            # Check if Jinja2 version exists
+            jinja2_file = self.template_dir / f"{template_name}.j2.tex"
+            has_jinja2 = jinja2_file.exists()
+
             # Read template to determine document class
+            # Prefer Jinja2 version if available for more accurate class detection
             try:
-                with open(tex_file, 'r', encoding='utf-8') as f:
+                content_file = jinja2_file if has_jinja2 else tex_file
+
+                with open(content_file, 'r', encoding='utf-8') as f:
                     content = f.read()
 
                 # Extract document class from \documentclass{...}
@@ -83,12 +95,18 @@ class TemplateManager:
                 template_info = TemplateInfo(
                     name=template_name,
                     path=tex_file,
+                    jinja2_path=jinja2_file if has_jinja2 else None,
+                    is_jinja2=has_jinja2,
                     cls_files=cls_files,
                     document_class=doc_class
                 )
 
                 templates[template_name] = template_info
-                logger.info(f"Discovered template: {template_name} (class: {doc_class})")
+                template_type = "Jinja2" if has_jinja2 else "Regular"
+                logger.info(
+                    f"Discovered {template_type} template: {template_name} "
+                    f"(class: {doc_class}, cls files: {len(cls_files)})"
+                )
 
             except Exception as e:
                 logger.error(f"Error processing template {tex_file}: {e}")
