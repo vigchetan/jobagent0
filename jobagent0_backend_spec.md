@@ -182,9 +182,7 @@ class ProfileSchema(BaseModel):
     summary: Optional[str] = None
     
     # Skills
-    programming_languages: list[str]
-    frameworks_libraries: list[str]
-    tools_platforms: list[str]
+    technical_skills: list[str]
     soft_skills: Optional[list[str]] = None
     
     # Experience
@@ -232,7 +230,7 @@ class ProjectRelevance(BaseModel):
     project_name: str
     relevance_score: float  # 0.0 to 1.0
     matching_keywords: list[str]
-    recommended: bool  # True for top 2-3 projects
+    recommended: bool  # True for top 2-3 projects (3 projects preffered)
 
 class RankedSkills(BaseModel):
     languages: list[str]  # Ordered by relevance to job
@@ -932,7 +930,7 @@ Respond with JSON only:
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                    PASS 1: SELECTION                            │
-│                    (Gemini 2.5 Flash)                           │
+│                    (Gemini 2.5 Pro)                             │
 ├─────────────────────────────────────────────────────────────────┤
 │  Input: Full profile, ranked_projects from matching data        │
 │  Task:  Select which projects/experiences to include            │
@@ -950,7 +948,8 @@ Respond with JSON only:
 │  Input: Original bullets, job description, target keywords      │
 │  Task:  Rewrite bullets to emphasize relevant skills            │
 │  Rules:                                                         │
-│    - Maintain truthfulness (rephrase, don't fabricate)          │
+│    - Maintain truthfulness (ok to add keywords related          |  
+|      to your work that are also present in the job description) |
 │    - Incorporate target keywords naturally                      │
 │    - Keep bullets concise (1-2 lines)                           │
 │    - Use strong action verbs                                    │
@@ -960,10 +959,11 @@ Respond with JSON only:
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                    PASS 3: SUMMARY                              │
-│                    (Gemini 2.5 Flash)                           │
+│                    (Gemini 2.5 Pro)                             │
 ├─────────────────────────────────────────────────────────────────┤
 │  Input: Job title, company, selected content, matched skills    │
-│  Task:  Generate 2-3 sentence professional summary              │
+│  Task:  Generate 3-4 sentence professional summary with         |
+|    soft skill keywords like "highly motivated", etc             │
 │  Output: profile_summary string                                 │
 └─────────────────────────────────────────────────────────────────┘
                               │
@@ -1137,7 +1137,7 @@ Target Keywords to incorporate naturally: {keywords}
 Emphasis Areas: {emphasis}
 
 Guidelines:
-1. MAINTAIN TRUTHFULNESS - rephrase and emphasize, do NOT add claims not supported by original
+1. MAINTAIN TRUTHFULNESS - rephrase and emphasize, do NOT add claims not supported by original; ok to add keywords related to your work that are also present in the job description.
 2. Incorporate relevant keywords where they fit naturally
 3. Use strong action verbs (Developed, Implemented, Designed, Optimized, Led, etc.)
 4. Quantify impact where possible (keep original numbers, don't invent)
@@ -1451,17 +1451,17 @@ Respond with the paragraph text only.
 
 ## LaTeX Template: Jake's Resume
 
-The resume uses Jake's Resume template with placeholder injection. Placeholders use the format `<<PLACEHOLDER_NAME>>` for string replacement.
+The resume uses Jake's Resume template with placeholder injection. Placeholders use the format `[[PLACEHOLDER_NAME]]` for string replacement. If some details are not present for some of the fields, we can remove those fields from the resume especially the optional fields in ResumeComponentSchema.
 
 ### Template Structure
 
 ```latex
-% app/templates/jake_resume.tex
-
 %-------------------------
-% Resume in LaTeX
-% Based on: https://github.com/jakegut/resume
-%-------------------------
+% Resume in Latex
+% Author : Jake Gutierrez
+% Based off of: https://github.com/sb2nov/resume
+% License : MIT
+%------------------------
 
 \documentclass[letterpaper,11pt]{article}
 
@@ -1478,12 +1478,26 @@ The resume uses Jake's Resume template with placeholder injection. Placeholders 
 \usepackage{tabularx}
 \input{glyphtounicode}
 
+
+%----------FONT OPTIONS----------
+% sans-serif
+% \usepackage[sfdefault]{FiraSans}
+% \usepackage[sfdefault]{roboto}
+% \usepackage[sfdefault]{noto-sans}
+% \usepackage[default]{sourcesanspro}
+
+% serif
+% \usepackage{CormorantGaramond}
+% \usepackage{charter}
+
+
 \pagestyle{fancy}
-\fancyhf{}
+\fancyhf{} % clear all header and footer fields
 \fancyfoot{}
 \renewcommand{\headrulewidth}{0pt}
 \renewcommand{\footrulewidth}{0pt}
 
+% Adjust margins
 \addtolength{\oddsidemargin}{-0.5in}
 \addtolength{\evensidemargin}{-0.5in}
 \addtolength{\textwidth}{1in}
@@ -1491,18 +1505,27 @@ The resume uses Jake's Resume template with placeholder injection. Placeholders 
 \addtolength{\textheight}{1.0in}
 
 \urlstyle{same}
+
 \raggedbottom
 \raggedright
 \setlength{\tabcolsep}{0in}
 
+% Sections formatting
 \titleformat{\section}{
   \vspace{-4pt}\scshape\raggedright\large
 }{}{0em}{}[\color{black}\titlerule \vspace{-5pt}]
 
+% Ensure that generate pdf is machine readable/ATS parsable
 \pdfgentounicode=1
 
+%-------------------------
 % Custom commands
-\newcommand{\resumeItem}[1]{\item\small{#1 \vspace{-2pt}}}
+\newcommand{\resumeItem}[1]{
+  \item\small{
+    {#1 \vspace{-2pt}}
+  }
+}
+
 \newcommand{\resumeSubheading}[4]{
   \vspace{-2pt}\item
     \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
@@ -1510,64 +1533,134 @@ The resume uses Jake's Resume template with placeholder injection. Placeholders 
       \textit{\small#3} & \textit{\small #4} \\
     \end{tabular*}\vspace{-7pt}
 }
+
+\newcommand{\resumeSubSubheading}[2]{
+    \item
+    \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
+      \textit{\small#1} & \textit{\small #2} \\
+    \end{tabular*}\vspace{-7pt}
+}
+
 \newcommand{\resumeProjectHeading}[2]{
     \item
     \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
       \small#1 & #2 \\
     \end{tabular*}\vspace{-7pt}
 }
+
 \newcommand{\resumeSubItem}[1]{\resumeItem{#1}\vspace{-4pt}}
+
 \renewcommand\labelitemii{$\vcenter{\hbox{\tiny$\bullet$}}$}
+
 \newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.15in, label={}]}
 \newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
 \newcommand{\resumeItemListStart}{\begin{itemize}}
 \newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-5pt}}
 
+%-------------------------------------------
+%%%%%%  RESUME STARTS HERE  %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 \begin{document}
 
 %----------HEADING----------
 \begin{center}
-    \textbf{\Huge \scshape <<NAME>>} \\ \vspace{1pt}
-    \small <<PHONE>> $|$ 
-    \href{mailto:<<EMAIL>>}{\underline{<<EMAIL>>}} $|$ 
-    \href{<<LINKEDIN>>}{\underline{<<LINKEDIN_DISPLAY>>}} $|$
-    \href{<<GITHUB>>}{\underline{<<GITHUB_DISPLAY>>}}
+    \textbf{\Huge \scshape [[FULL\_NAME]]} \\ \vspace{1pt}
+    \small [[PHONE\_NUMBER]] $|$ \href{mailto:[[EMAIL\_ADDRESS]]}{\underline{[[EMAIL\_ADDRESS]]}} $|$ 
+    \href{[[LINKEDIN\_URL]]}{\underline{[[LINKEDIN\_DISPLAY]]}} $|$
+    \href{[[GITHUB\_URL]]}{\underline{[[GITHUB\_DISPLAY]]}}
 \end{center}
 
-%----------SUMMARY----------
-\section{Summary}
-<<PROFILE_SUMMARY>>
+
+%-----------PROFILE-----------
+\section{Profile}
+\begin{flushleft}
+\small{[[PROFILE\_SUMMARY]]}
+\end{flushleft}
+
 
 %-----------EDUCATION-----------
 \section{Education}
-\resumeSubHeadingListStart
-  \resumeSubheading
-    {<<EDUCATION_INSTITUTION>>}{<<EDUCATION_DATES>>}
-    {<<EDUCATION_DEGREE>>}{<<EDUCATION_LOCATION>>}
-\resumeSubHeadingListEnd
+  \resumeSubHeadingListStart
+    \resumeSubheading
+      {[[UNIVERSITY\_NAME]]}{[[UNIVERSITY\_LOCATION]]}
+      {[[DEGREE\_NAME]], [[PROGRAM\_NAME]]}{[[GRADUATION\_DATE]]} \\
+      \resumeItemListStart
+        \resumeItem{\textbf{Relevant Coursework:} [[RELEVANT\_COURSES]]}
+      \resumeItemListEnd
+  \resumeSubHeadingListEnd
 
-%-----------TECHNICAL SKILLS-----------
-\section{Technical Skills}
-\begin{itemize}[leftmargin=0.15in, label={}]
-    \small{\item{
-     \textbf{Languages}{: <<LANGUAGES>>} \\
-     \textbf{Frameworks}{: <<FRAMEWORKS>>} \\
-     \textbf{Developer Tools}{: <<TOOLS>>}
-    }}
-\end{itemize}
 
 %-----------PROJECTS-----------
 \section{Projects}
-\resumeSubHeadingListStart
-<<PROJECTS_CONTENT>>
-\resumeSubHeadingListEnd
+    \resumeSubHeadingListStart
+    
+      \resumeProjectHeading
+          {\textbf{[[PROJECT\_1\_NAME]]} $|$ \emph{[[PROJECT\_1\_TECHNOLOGIES]]}}{[[PROJECT\_1\_DATES]]} \\
+          \resumeItemListStart
+            \resumeItem{[[PROJECT\_1\_BULLET\_1]]}
+            \resumeItem{[[PROJECT\_1\_BULLET\_2]]}
+            \resumeItem{[[PROJECT\_1\_BULLET\_3]]}
+          \resumeItemListEnd
+          
+      \resumeProjectHeading
+          {\textbf{[[PROJECT\_2\_NAME]]} $|$ \emph{[[PROJECT\_2\_TECHNOLOGIES]]}}{[[PROJECT\_2\_DATES]]} \\
+          \resumeItemListStart
+            \resumeItem{[[PROJECT\_2\_BULLET\_1]]}
+            \resumeItem{[[PROJECT\_2\_BULLET\_2]]}
+            \resumeItem{[[PROJECT\_2\_BULLET\_3]]}
+          \resumeItemListEnd
+          
+      \resumeProjectHeading
+          {\textbf{[[PROJECT\_3\_NAME]]} $|$ \emph{[[PROJECT\_3\_TECHNOLOGIES]]}}{[[PROJECT\_3\_DATES]]} \\
+          \resumeItemListStart
+            \resumeItem{[[PROJECT\_3\_BULLET\_1]]}
+            \resumeItem{[[PROJECT\_3\_BULLET\_2]]}
+            \resumeItem{[[PROJECT\_3\_BULLET\_3]]}
+          \resumeItemListEnd
+          
+    \resumeSubHeadingListEnd
 
-%-----------EXPERIENCE-----------
-<<EXPERIENCE_SECTION>>
 
 %-----------INVOLVEMENTS-----------
-<<INVOLVEMENTS_SECTION>>
+\section{Involvements}
+  \resumeSubHeadingListStart
 
+    \resumeSubheading
+      {[[INVOLVEMENT\_1\_TITLE]]}{[[INVOLVEMENT\_1\_DATES]]}
+      {[[INVOLVEMENT\_1\_ORGANIZATION]]}{[[INVOLVEMENT\_1\_LOCATION]]} \\
+      \resumeItemListStart
+        \resumeItem{[[INVOLVEMENT\_1\_BULLET\_1]]}
+        \resumeItem{[[INVOLVEMENT\_1\_BULLET\_2]]}
+        \resumeItem{[[INVOLVEMENT\_1\_BULLET\_3]]}
+      \resumeItemListEnd
+
+    \resumeSubheading
+      {[[INVOLVEMENT\_2\_TITLE]]}{[[INVOLVEMENT\_2\_DATES]]}
+      {[[INVOLVEMENT\_2\_ORGANIZATION]]}{[[INVOLVEMENT\_2\_LOCATION]]} \\
+      \resumeItemListStart
+        \resumeItem{[[INVOLVEMENT\_2\_BULLET\_1]]}
+        \resumeItem{[[INVOLVEMENT\_2\_BULLET\_2]]}
+        \resumeItem{[[INVOLVEMENT\_2\_BULLET\_3]]}
+      \resumeItemListEnd
+
+  \resumeSubHeadingListEnd
+
+
+%-----------PROGRAMMING SKILLS-----------
+\section{Technical Skills}
+ \begin{itemize}[leftmargin=0.15in, label={}]
+    \small{\item{
+     \textbf{[[LABEL\_1]]}{: [[TECHNOLOGIES\_1]]} \\
+     \textbf{[[LABEL\_2]]}{: [[TECHNOLOGIES\_2]]} \\
+     \textbf{[[LABEL\_3]]}{: [[TECHNOLOGIES\_3]]} \\
+     \textbf{[[LABEL\_4]]}{: [[TECHNOLOGIES\_4]]} \\
+     \textbf{[[LABEL\_5]]}{: [[TECHNOLOGIES\_5]]} \\
+    }}
+ \end{itemize}
+
+
+%-------------------------------------------
 \end{document}
 ```
 
